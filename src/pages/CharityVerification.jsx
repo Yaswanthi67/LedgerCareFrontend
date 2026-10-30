@@ -95,7 +95,7 @@ export default function CharityVerification() {
           Charity Verification
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-          Cryptographic hash matching between NGO credentials and <code>CharityRegistry.sol</code> on-chain records.
+          Cryptographic hash matching between NGO credentials and verified on-chain blockchain records.
         </p>
       </div>
 
@@ -147,7 +147,7 @@ export default function CharityVerification() {
             <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
               {isVerified ? (
                 <span>
-                  The credential hash matches the on-chain registration on <code>CharityRegistry.sol</code>. Campaign creation is unlocked.
+                  The credential hash matches the on-chain registration on the blockchain. Campaign creation is unlocked.
                 </span>
               ) : (
                 <span>

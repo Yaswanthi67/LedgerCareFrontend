@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import {
@@ -591,7 +591,7 @@ export default function CampaignDetails() {
                     Authentic Smart Contract Record
                   </h4>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    This campaign is anchored on the <code>CampaignManager</code> smart contract.
+                    This campaign is anchored on the blockchain ledger.
                   </p>
                 </div>
               </div>
@@ -600,8 +600,8 @@ export default function CampaignDetails() {
                 <table className="table">
                   <tbody>
                     <tr>
-                      <td style={{ fontWeight: '600', width: '220px' }}>Contract Name</td>
-                      <td className="font-mono">CampaignManager.sol</td>
+                      <td style={{ fontWeight: '600', width: '220px' }}>Ledger Record</td>
+                      <td className="font-mono">Campaign Manager Ledger</td>
                     </tr>
                     <tr>
                       <td style={{ fontWeight: '600' }}>Contract Address</td>

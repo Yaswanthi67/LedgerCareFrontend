@@ -223,6 +223,8 @@ export default function CharityDashboard() {
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '1rem',
+        position: 'relative',
+        zIndex: 40,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
           <div style={{
@@ -295,8 +297,9 @@ export default function CharityDashboard() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          {isConnected ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          <WalletButton />
+          {isConnected && (
             <button
               type="button"
               onClick={disconnectWallet}
@@ -304,23 +307,21 @@ export default function CharityDashboard() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.45rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '8px',
+                padding: '0.42rem 0.85rem',
+                borderRadius: '9999px',
                 background: 'rgba(239, 68, 68, 0.15)',
                 border: '1px solid rgba(239, 68, 68, 0.4)',
                 color: '#f87171',
-                fontSize: '0.82rem',
+                fontSize: '0.8rem',
                 fontWeight: '700',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
               }}
               title="Disconnect your MetaMask wallet address"
             >
-              <Power size={14} color="#f87171" />
-              <span>Disconnect Wallet</span>
+              <Power size={13} color="#f87171" />
+              <span>Disconnect</span>
             </button>
-          ) : (
-            <WalletButton />
           )}
         </div>
       </div>
@@ -331,6 +332,8 @@ export default function CharityDashboard() {
           padding: '1.5rem 1.75rem',
           border: '1px solid rgba(244, 63, 94, 0.35)',
           background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(15, 23, 42, 0.85) 100%)',
+          position: 'relative',
+          zIndex: 10,
         }}>
           <div style={{
             display: 'flex',
@@ -386,6 +389,8 @@ export default function CharityDashboard() {
           padding: '1.5rem 1.75rem',
           border: '1px solid rgba(16, 185, 129, 0.4)',
           background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%)',
+          position: 'relative',
+          zIndex: 10,
         }}>
           <div style={{
             display: 'flex',
@@ -445,6 +450,8 @@ export default function CharityDashboard() {
           padding: '1.5rem 1.75rem',
           border: '1px solid rgba(245, 158, 11, 0.4)',
           background: 'rgba(15, 23, 42, 0.8)',
+          position: 'relative',
+          zIndex: 10,
         }}>
           <div style={{
             display: 'flex',

@@ -261,7 +261,7 @@ export default function DonorDashboard() {
                   Verified Charities Directory
                 </h3>
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  Only non-profits cryptographically authenticated via <code>CharityRegistry.sol</code> are permitted to host campaigns.
+                  Only non-profits cryptographically authenticated on the blockchain are permitted to host campaigns.
                 </p>
               </div>
 

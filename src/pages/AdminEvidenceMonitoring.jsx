@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { truncateHash } from '../utils/formatters';
@@ -121,7 +121,7 @@ export default function AdminEvidenceMonitoring() {
       }}>
         <Lock size={18} color="#22d3ee" style={{ flexShrink: 0 }} />
         <span style={{ fontSize: '0.84rem', color: '#a5f3fc' }}>
-          <strong>Tamper-Evident Verification:</strong> There are NO manual approval buttons on this page. Evidence integrity is confirmed automatically through Keccak-256 hash comparison against <code>FundEvidenceTracker.sol</code>.
+          <strong>Tamper-Evident Verification:</strong> There are NO manual approval buttons on this page. Evidence integrity is confirmed automatically through Keccak-256 hash comparison on the blockchain.
         </span>
       </div>
 

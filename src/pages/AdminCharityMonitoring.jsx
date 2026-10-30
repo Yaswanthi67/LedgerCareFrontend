@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { formatDate, truncateHash } from '../utils/formatters';
@@ -102,7 +102,7 @@ export default function AdminCharityMonitoring() {
 
       {/* Charities Table (Section 25) */}
       {isLoading ? (
-        <LoadingSpinner message="Querying registered charities from CharityRegistry.sol..." />
+        <LoadingSpinner message="Querying registered charities from blockchain records..." />
       ) : charities.length === 0 ? (
         <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)' }}>No charities found in the blockchain registry.</p>

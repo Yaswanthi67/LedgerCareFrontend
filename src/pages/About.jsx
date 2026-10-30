@@ -65,7 +65,7 @@ export default function About() {
             Cryptographic Accountability
           </h3>
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
-            <li>✓ Every rupee donated via UPI or Card is immediately recorded on <code>DonationLedger.sol</code>.</li>
+            <li>✓ Every rupee donated via UPI or Card is immediately recorded on the blockchain donation ledger.</li>
             <li>✓ Charities cannot withdraw funds without logging verified on-chain disbursement allocations.</li>
             <li>✓ Expenditure receipts are pinned to IPFS and sealed with tamper-evident Keccak-256 hashes.</li>
             <li>✓ Automatic hash matching replaces manual admin verification, ensuring impartial zero-trust governance.</li>
@@ -126,22 +126,22 @@ export default function About() {
             </thead>
             <tbody>
               <tr>
-                <td style={{ fontWeight: '700', color: '#ffffff' }}>CharityRegistry.sol</td>
+                <td style={{ fontWeight: '700', color: '#ffffff' }}>Charity Registry Ledger</td>
                 <td>Stores normalized credential hashes; handles whitelisting & automated verification.</td>
                 <td className="font-mono" style={{ color: '#60a5fa', fontSize: '0.75rem' }}>0x5FbDB2315678afecb367f032d93F642f64180aa3</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#ffffff' }}>CampaignManager.sol</td>
+                <td style={{ fontWeight: '700', color: '#ffffff' }}>Campaign Manager Ledger</td>
                 <td>Deploys campaigns with financial caps, target dates, and verified charity validation.</td>
                 <td className="font-mono" style={{ color: '#60a5fa', fontSize: '0.75rem' }}>0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#ffffff' }}>DonationLedger.sol</td>
+                <td style={{ fontWeight: '700', color: '#ffffff' }}>Donation Records Ledger</td>
                 <td>Receives relayed donations; maintains immutable record of donor contributions.</td>
                 <td className="font-mono" style={{ color: '#60a5fa', fontSize: '0.75rem' }}>0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#ffffff' }}>FundEvidenceTracker.sol</td>
+                <td style={{ fontWeight: '700', color: '#ffffff' }}>Fund Evidence Tracker Ledger</td>
                 <td>Tracks itemized fund usages and seals IPFS CIDs with Keccak-256 evidence hashes.</td>
                 <td className="font-mono" style={{ color: '#60a5fa', fontSize: '0.75rem' }}>0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9</td>
               </tr>

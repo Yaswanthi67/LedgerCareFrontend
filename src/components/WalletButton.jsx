@@ -184,7 +184,7 @@ export default function WalletButton() {
 
   // When wallet is connected: show shortened address & account manager dropdown
   return (
-    <div style={{ position: 'relative', zIndex: 1000 }}>
+    <div ref={dropdownRef} style={{ position: 'relative', zIndex: dropdownOpen ? 99999 : 10 }}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
         style={{
@@ -222,14 +222,14 @@ export default function WalletButton() {
           style={{
             position: 'absolute',
             right: 0,
-            top: 'calc(100% + 6px)',
+            top: 'calc(100% + 8px)',
             width: '290px',
-            background: '#090d16',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: '#0a0f1d',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             borderRadius: '12px',
             padding: '1rem',
-            boxShadow: '0 20px 45px rgba(0,0,0,0.85)',
-            zIndex: 99999,
+            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.95), 0 0 1px 1px rgba(255, 255, 255, 0.2)',
+            zIndex: 999999,
           }}
         >
           {/* Header */}

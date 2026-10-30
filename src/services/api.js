@@ -203,7 +203,7 @@ export const api = {
       verified: true,
       verificationStatus: 'VERIFIED',
       charityId: id,
-      blockchainRecord: { verified: true, contract: 'CharityRegistry.sol' },
+      blockchainRecord: { verified: true, contract: 'Blockchain Registry' },
     })),
 
   // ==========================================

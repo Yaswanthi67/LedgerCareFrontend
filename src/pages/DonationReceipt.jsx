@@ -343,7 +343,7 @@ Blockchain Smart Contract Ledger: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            <span>Contract: <code>DonationLedger.sol (0x9fE46...)</code></span>
+            <span>Ledger: <code>Blockchain Donation Record</code></span>
             <span>Recorded at: {formatDateTime(donation.date)}</span>
           </div>
         </div>

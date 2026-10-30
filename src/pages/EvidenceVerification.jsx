@@ -894,7 +894,7 @@ export default function EvidenceVerification() {
                   ORIGINAL REGISTERED SHA-256 HASH:
                 </span>
                 <span style={{ fontSize: '0.72rem', color: '#60a5fa' }}>
-                  {verificationResult.retrievedFrom || 'FundEvidenceTracker.sol (Blockchain)'}
+                  {verificationResult.retrievedFrom || 'Blockchain Ledger'}
                 </span>
               </div>
               <div className="font-mono" style={{

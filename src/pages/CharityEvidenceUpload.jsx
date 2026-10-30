@@ -394,7 +394,7 @@ export default function CharityEvidenceUpload() {
             </span>
           </div>
           <p style={{ fontSize: '0.83rem', color: '#cbd5e1', lineHeight: 1.55, margin: 0 }}>
-            Once an expenditure bill or receipt is registered via MetaMask and sealed on <code>FundEvidenceTracker.sol</code>, it is <strong>cryptographically permanent and immutable</strong>. Charities <strong>CANNOT</strong> edit, alter, replace, overwrite, tamper with, or "correct" previously registered evidence. If a mistake was made on an uploaded document, the existing record remains intact on the blockchain, and an audited supplementary document must be submitted separately.
+            Once an expenditure bill or receipt is registered via MetaMask and sealed on the blockchain ledger, it is <strong>cryptographically permanent and immutable</strong>. Charities <strong>CANNOT</strong> edit, alter, replace, overwrite, tamper with, or "correct" previously registered evidence. If a mistake was made on an uploaded document, the existing record remains intact on the blockchain, and an audited supplementary document must be submitted separately.
           </p>
         </div>
       </div>
@@ -695,7 +695,7 @@ export default function CharityEvidenceUpload() {
                   <span>&bull;</span>
                   <span>Storage: <code>IPFS</code></span>
                   <span>&bull;</span>
-                  <span>Ledger: <code>FundEvidenceTracker.sol</code></span>
+                  <span>Ledger: <code>Blockchain Ledger</code></span>
                 </div>
               </div>
             )}
