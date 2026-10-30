@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import WalletButton from './WalletButton';
+// import WalletButton from './WalletButton';
 import {
   Shield,
   Menu,
@@ -121,12 +121,9 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Right Actions: MetaMask Wallet, Role Switcher & Donate Button */}
+        {/* Right Actions: Role Switcher & Donate Button */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          {/* 1. MetaMask Wallet Connection Button */}
-          <WalletButton />
-
-          {/* 2. Role Switcher Pill */}
+          {/* Role Switcher Pill */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
@@ -298,10 +295,6 @@ export default function Navbar() {
           flexDirection: 'column',
           gap: '0.65rem',
         }}>
-          <div style={{ padding: '0.5rem 0' }}>
-            <WalletButton />
-          </div>
-
           {navLinks.map((link) => (
             <Link
               key={link.path}

@@ -213,44 +213,6 @@ export default function CreateCampaign() {
         </p>
       </div>
 
-      {/* Connected Wallet Bar */}
-      <div style={{
-        background: 'rgba(15, 23, 42, 0.6)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: '10px',
-        padding: '0.75rem 1rem',
-        marginBottom: '1.5rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontSize: '0.82rem',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Wallet size={16} color={isConnected ? '#34d399' : '#60a5fa'} />
-          <span>
-            {isConnected ? (
-              <>
-                <strong style={{ color: '#34d399' }}>Charity Creator Wallet:</strong>{' '}
-                <span className="font-mono">{account}</span>
-              </>
-            ) : (
-              <span style={{ color: '#94a3b8' }}>
-                MetaMask optional: connect wallet to sign as the campaign creator
-              </span>
-            )}
-          </span>
-        </div>
-        {!isConnected && (
-          <button
-            type="button"
-            onClick={connectWallet}
-            className="btn btn-secondary btn-sm"
-            style={{ fontSize: '0.75rem' }}
-          >
-            Connect Wallet
-          </button>
-        )}
-      </div>
 
       <div className="card" style={{ padding: '2.5rem 2rem' }}>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
