@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import CampaignProgress from './CampaignProgress';
 import StatusBadge from './StatusBadge';
@@ -9,8 +9,15 @@ export default function CampaignCard({ campaign, onDonateClick }) {
   if (!campaign) return null;
 
   const campaignId = campaign.campaignId || campaign.id;
+  const title = campaign.title || campaign.campaignTitle || 'Social Welfare Campaign';
   const daysLeft = getDaysRemaining(campaign.endDate);
-  const statusStr = campaign.status === 0 || campaign.status === 'Active' ? 'Active' : 'Completed';
+  const statusStr =
+    campaign.status === 0 ||
+    campaign.status === 'Active' ||
+    campaign.campaignStatus === 0 ||
+    campaign.campaignStatus === 'Active'
+      ? 'Active'
+      : 'Completed';
 
   // Default images based on category / id
   const fallbackImages = [
@@ -41,7 +48,7 @@ export default function CampaignCard({ campaign, onDonateClick }) {
       <div style={{ position: 'relative', height: '190px', width: '100%', overflow: 'hidden' }}>
         <img
           src={imageUrl}
-          alt={campaign.title}
+          alt={title}
           style={{
             width: '100%',
             height: '100%',
@@ -124,7 +131,7 @@ export default function CampaignCard({ campaign, onDonateClick }) {
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
           }}>
-            {campaign.title}
+            {title}
           </h3>
           <p style={{
             fontSize: '0.84rem',

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { formatInr, ethToInr, formatDate, truncateHash } from '../utils/formatters';
@@ -352,7 +352,20 @@ export default function FundUtilization() {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <StatusBadge type="evidence" status="RECORDED" size="sm" />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <StatusBadge type="evidence" status="RECORDED" size="sm" />
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: '700',
+                          padding: '0.15rem 0.45rem',
+                          borderRadius: '9999px',
+                          background: 'rgba(16, 185, 129, 0.12)',
+                          color: '#34d399',
+                          border: '1px solid rgba(16, 185, 129, 0.25)',
+                        }}>
+                          Immutable
+                        </span>
+                      </div>
                       <Link
                         to={`/evidence/${u.usageId}`}
                         style={{

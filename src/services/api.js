@@ -43,11 +43,17 @@ async function request(endpoint, options = {}) {
     headers['Content-Type'] = 'application/json';
   }
 
+  const controller = new AbortController();
+  const timeoutMs = options.timeout || 5000;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const res = await fetch(url, {
       ...options,
       headers,
+      signal: options.signal || controller.signal,
     });
+    clearTimeout(timer);
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -59,6 +65,7 @@ async function request(endpoint, options = {}) {
     }
     return data;
   } catch (err) {
+    clearTimeout(timer);
     console.warn(`[API] ${options.method || 'GET'} ${endpoint} failed:`, err.message);
     throw err;
   }

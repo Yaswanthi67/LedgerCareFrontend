@@ -122,10 +122,13 @@ export default function App() {
 
                   {/* Cryptographic Verification & Transparency */}
                   <Route path="/blockchain" element={<BlockchainRecords />} />
+                  <Route path="/ledger" element={<BlockchainRecords />} />
+                  <Route path="/audit-ledger" element={<BlockchainRecords />} />
                   <Route path="/transparency" element={<EvidenceVerification />} />
                   <Route path="/evidence/:id" element={<EvidenceVerification />} />
                   <Route path="/verify" element={<EvidenceVerification />} />
                   <Route path="/transparency/blockchain" element={<BlockchainRecords />} />
+                  <Route path="/transparency/ledger" element={<BlockchainRecords />} />
                   <Route path="/transparency/:campaignId" element={<TransparencyTimeline />} />
 
                   {/* Admin Monitoring */}

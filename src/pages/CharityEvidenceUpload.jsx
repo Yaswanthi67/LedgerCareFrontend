@@ -311,6 +311,41 @@ export default function CharityEvidenceUpload() {
         </div>
       )}
 
+      {/* Strict Cryptographic Immutability Notice */}
+      <div style={{
+        padding: '1.1rem 1.35rem',
+        borderRadius: '12px',
+        background: 'rgba(239, 68, 68, 0.08)',
+        border: '1px solid rgba(239, 68, 68, 0.3)',
+        marginBottom: '2rem',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '0.9rem',
+      }}>
+        <Lock size={22} color="#f87171" style={{ flexShrink: 0, marginTop: '2px' }} />
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.92rem', fontWeight: '800', color: '#f87171', letterSpacing: '-0.01em' }}>
+              STRICT EVIDENCE IMMUTABILITY ENFORCED ON-CHAIN
+            </span>
+            <span style={{
+              fontSize: '0.68rem',
+              fontWeight: '700',
+              padding: '0.15rem 0.5rem',
+              borderRadius: '9999px',
+              background: 'rgba(239, 68, 68, 0.2)',
+              color: '#fca5a5',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+            }}>
+              CANNOT BE EDITED OR TAMPERED
+            </span>
+          </div>
+          <p style={{ fontSize: '0.83rem', color: '#cbd5e1', lineHeight: 1.55, margin: 0 }}>
+            Once an expenditure bill or receipt is registered via MetaMask and sealed on <code>FundEvidenceTracker.sol</code>, it is <strong>cryptographically permanent and immutable</strong>. Charities <strong>CANNOT</strong> edit, alter, replace, overwrite, tamper with, or "correct" previously registered evidence. If a mistake was made on an uploaded document, the existing record remains intact on the blockchain, and an audited supplementary document must be submitted separately.
+          </p>
+        </div>
+      </div>
+
 
       {uploadedData ? (
         /* Upload Success View (Step 9) */
@@ -709,7 +744,8 @@ export default function CharityEvidenceUpload() {
                   <th style={{ padding: '0.65rem 0.5rem' }}>Amount</th>
                   <th style={{ padding: '0.65rem 0.5rem' }}>IPFS CID</th>
                   <th style={{ padding: '0.65rem 0.5rem' }}>Original SHA-256</th>
-                  <th style={{ padding: '0.65rem 0.5rem' }}>Action</th>
+                  <th style={{ padding: '0.65rem 0.5rem' }}>Blockchain Immutability</th>
+                  <th style={{ padding: '0.65rem 0.5rem' }}>Audit Verification</th>
                 </tr>
               </thead>
               <tbody>
@@ -741,12 +777,30 @@ export default function CharityEvidenceUpload() {
                       </span>
                     </td>
                     <td style={{ padding: '0.75rem 0.5rem' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        fontSize: '0.72rem',
+                        fontWeight: '700',
+                        color: '#34d399',
+                        background: 'rgba(16, 185, 129, 0.12)',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: '9999px',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                      }}>
+                        <Lock size={11} color="#34d399" />
+                        <span>IMMUTABLE (Locked)</span>
+                      </span>
+                    </td>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
                       <Link
                         to={`/evidence/${ev.evidenceId || 1}`}
                         className="btn btn-secondary btn-sm"
-                        style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem' }}
+                        style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                       >
-                        Verify
+                        <ShieldCheck size={12} color="#60a5fa" />
+                        <span>Audit SHA-256</span>
                       </Link>
                     </td>
                   </tr>
@@ -755,6 +809,24 @@ export default function CharityEvidenceUpload() {
             </table>
           </div>
         )}
+
+        <div style={{
+          marginTop: '1.25rem',
+          padding: '0.85rem 1rem',
+          borderRadius: '8px',
+          background: 'rgba(15, 23, 42, 0.6)',
+          border: '1px solid var(--border-subtle)',
+          fontSize: '0.76rem',
+          color: '#94a3b8',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+        }}>
+          <Lock size={14} color="#60a5fa" style={{ flexShrink: 0 }} />
+          <span>
+            <strong>Zero-Trust Immutability Rule:</strong> Previously registered evidence records are permanent on the blockchain. Charities cannot edit, correct, overwrite, or delete documents. All changes require registering a new supplementary audit item.
+          </span>
+        </div>
       </div>
 
       <style>{`

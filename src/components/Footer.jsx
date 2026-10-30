@@ -73,7 +73,7 @@ export default function Footer() {
             </li>
             <li>
               <Link to="/transparency/blockchain" style={{ color: 'var(--text-secondary)' }}>
-                3. Blockchain & Smart Contract
+                3. Public Audit Ledger
               </Link>
             </li>
             <li>

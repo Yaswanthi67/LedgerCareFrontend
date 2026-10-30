@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { truncateHash, formatDateTime } from '../utils/formatters';
-import { CONTRACT_ADDRESSES } from '../config/contracts';
 import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
@@ -19,6 +18,7 @@ import {
   FileCheck2,
   ExternalLink,
   Coins,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export default function BlockchainRecords() {
@@ -35,7 +35,7 @@ export default function BlockchainRecords() {
         const res = await api.getBlockchainRecords();
         setRecords(res.records || []);
       } catch (err) {
-        console.warn('Error loading blockchain records:', err);
+        console.warn('Error loading audit ledger records:', err);
       } finally {
         setIsLoading(false);
       }
@@ -82,68 +82,68 @@ export default function BlockchainRecords() {
           fontWeight: '700',
           marginBottom: '0.4rem',
         }}>
-          <Lock size={13} />
-          <span>Read-Only Public Ledger Explorer</span>
+          <ShieldCheck size={13} />
+          <span>Tamper-Evident Public Ledger</span>
         </div>
         <h1 style={{ fontSize: '2.2rem', fontWeight: '800', color: '#ffffff' }}>
-          Blockchain & Smart Contract Audit Records
+          Public Audit Ledger
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem' }}>
-          Immutable records anchored directly to Solidity smart contracts on the Ethereum ledger. Verified cryptographically via SHA-256 and transaction hashes.
+          Real-time, permanent audit records verifying every charity registration, campaign, donor contribution, and expenditure proof across LedgerCare.
         </p>
       </div>
 
-      {/* Contract Verification Summary Cards */}
+      {/* Audit Category Overview Cards */}
       <div className="grid-4" style={{ gap: '1rem' }}>
-        <div className="card" style={{ padding: '1rem', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
+        <div className="card" style={{ padding: '1.25rem', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>CharityRegistry.sol</span>
-            <Building2 size={16} color="#34d399" />
+            <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Verified Charities</span>
+            <Building2 size={18} color="#34d399" />
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.25rem' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.25rem' }}>
             {charityCount}
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#94a3b8', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-            {truncateHash(CONTRACT_ADDRESSES?.CharityRegistry || '0x5FbDB2315678afecb367f032d93F642f64180aa3', 6, 4)}
+          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            Officially verified NGOs
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1rem', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
+        <div className="card" style={{ padding: '1.25rem', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>CampaignManager.sol</span>
-            <Layers size={16} color="#60a5fa" />
+            <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Active Campaigns</span>
+            <Layers size={18} color="#60a5fa" />
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.25rem' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.25rem' }}>
             {campaignCount}
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#94a3b8', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-            {truncateHash(CONTRACT_ADDRESSES?.CampaignManager || '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512', 6, 4)}
+          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            Approved social causes
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1rem', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
+        <div className="card" style={{ padding: '1.25rem', border: '1px solid rgba(244, 63, 94, 0.25)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>DonationLedger.sol</span>
-            <Heart size={16} color="#f43f5e" />
+            <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Donation Entries</span>
+            <Heart size={18} color="#f43f5e" />
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.25rem' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.25rem' }}>
             {donationCount}
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#94a3b8', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-            {truncateHash(CONTRACT_ADDRESSES?.DonationLedger || '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0', 6, 4)}
+          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            Audited INR contributions
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1rem', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
+        <div className="card" style={{ padding: '1.25rem', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700' }}>FundEvidenceTracker.sol</span>
-            <FileCheck2 size={16} color="#fbbf24" />
+            <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Expenditure Evidences</span>
+            <FileCheck2 size={18} color="#fbbf24" />
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.25rem' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.25rem' }}>
             {evidenceCount}
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#94a3b8', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-            {truncateHash(CONTRACT_ADDRESSES?.FundEvidenceTracker || '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9', 6, 4)}
+          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            Itemized bills & receipts
           </div>
         </div>
       </div>
@@ -189,23 +189,23 @@ export default function BlockchainRecords() {
 
       {/* Records Table */}
       {isLoading ? (
-        <LoadingSpinner message="Querying on-chain records from backend relayer..." />
+        <LoadingSpinner message="Querying public audit ledger records..." />
       ) : filteredRecords.length === 0 ? (
         <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)' }}>No records match your filter.</p>
+          <p style={{ color: 'var(--text-muted)' }}>No audit records match your filter.</p>
         </div>
       ) : (
         <div className="table-responsive card" style={{ padding: '0.5rem' }}>
           <table className="table">
             <thead>
               <tr>
-                <th>Record Type</th>
-                <th>Record ID</th>
+                <th>Record Category</th>
+                <th>Audit ID</th>
                 <th>Description / Actor</th>
-                <th>Block #</th>
-                <th>Hash / SHA-256</th>
-                <th>Transaction Hash</th>
-                <th>Timestamp</th>
+                <th>Ledger Entry #</th>
+                <th>Record Hash (SHA-256)</th>
+                <th>Reference Tx ID</th>
+                <th>Recorded At</th>
                 <th>Status</th>
                 <th>Verification</th>
               </tr>
@@ -275,7 +275,7 @@ export default function BlockchainRecords() {
                       <button
                         onClick={() => copyHash(r.transactionHash, `${r.id}-tx`)}
                         style={{ background: 'transparent', border: 'none', color: copiedId === `${r.id}-tx` ? '#34d399' : 'var(--text-muted)', cursor: 'pointer', padding: '0.1rem' }}
-                        title="Copy Tx Hash"
+                        title="Copy Reference ID"
                       >
                         {copiedId === `${r.id}-tx` ? <Check size={12} /> : <Copy size={12} />}
                       </button>

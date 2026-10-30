@@ -22,6 +22,7 @@ import {
   Clock,
   Layers,
   Search,
+  User,
 } from 'lucide-react';
 
 export default function DonorDashboard() {
@@ -119,18 +120,6 @@ export default function DonorDashboard() {
             Browse verified charities, track transparent campaign progress, donate via UPI, and audit evidence authenticity on-chain.
           </p>
         </div>
-
-        <button
-          onClick={() => setActiveTab('campaigns')}
-          className="btn btn-primary"
-          style={{
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-          }}
-        >
-          <Sparkles size={16} />
-          <span>Browse Active Causes</span>
-        </button>
       </div>
 
       {/* KPI Stats Grid */}
@@ -197,7 +186,7 @@ export default function DonorDashboard() {
         overflowX: 'auto',
       }}>
         {[
-          { id: 'campaigns', label: 'Active Campaigns & Donate', icon: <Sparkles size={15} /> },
+          { id: 'campaigns', label: 'Browse Active Causes & Donate', icon: <Sparkles size={15} /> },
           { id: 'charities', label: 'Browse Verified Charities', icon: <Building2 size={15} /> },
           { id: 'donations', label: 'My Donation History', icon: <Receipt size={15} /> },
           { id: 'evidence', label: 'Bills, Receipts & Invoices', icon: <FileText size={15} /> },

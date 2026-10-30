@@ -31,9 +31,10 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: '1. Donor', path: '/donor' },
-    { name: '2. Charity', path: '/charity' },
-    { name: '3. Blockchain & Smart Contract', path: '/transparency/blockchain' },
+    { name: 'Browse Active Causes', path: '/campaigns' },
+    { name: '1. Donor Hub', path: '/donor' },
+    { name: '2. Charity Portal', path: '/charity' },
+    { name: '3. Public Audit Ledger', path: '/transparency/blockchain' },
     { name: '4. Transparency & Tracking', path: '/verify' },
   ];
 
@@ -119,12 +120,28 @@ export default function Navbar() {
                 fontWeight: '600',
                 borderRadius: 'var(--radius-sm)',
                 color: isActive(link.path) ? '#34d399' : 'var(--text-secondary)',
-                background: isActive(link.path) ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
-                border: isActive(link.path) ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid transparent',
+                background: isActive(link.path) ? 'rgba(16, 185, 129, 0.12)' : (link.path === '/campaigns' ? 'rgba(59, 130, 246, 0.08)' : 'transparent'),
+                border: isActive(link.path) ? '1px solid rgba(16, 185, 129, 0.25)' : (link.path === '/campaigns' ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid transparent'),
                 transition: 'all 0.15s ease',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
               }}
             >
               {link.name}
+              {link.path === '/campaigns' && (
+                <span style={{
+                  fontSize: '0.62rem',
+                  fontWeight: '700',
+                  padding: '0.1rem 0.4rem',
+                  borderRadius: '9999px',
+                  background: 'rgba(59, 130, 246, 0.2)',
+                  color: '#60a5fa',
+                  border: '1px solid rgba(59, 130, 246, 0.35)',
+                }}>
+                  Causes
+                </span>
+              )}
             </Link>
           ))}
         </nav>

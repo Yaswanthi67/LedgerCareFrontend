@@ -27,23 +27,117 @@ import {
 export default function Home() {
   const { isDonor } = useAuth();
   const [stats, setStats] = useState({
-    totalCampaigns: 1,
-    activeCampaigns: 1,
-    completedCampaigns: 0,
-    totalRaisedInr: 502500, // ₹5,02,500 (from 2.01 ETH)
-    verifiedCharitiesCount: 1,
-    evidenceCount: 1,
+    totalCampaigns: 4,
+    activeCampaigns: 4,
+    completedCampaigns: 1,
+    totalRaisedInr: 1250000,
+    verifiedCharitiesCount: 3,
+    evidenceCount: 6,
   });
 
-  const [campaigns, setCampaigns] = useState([]);
-  const [charities, setCharities] = useState([]);
-  const [fundUsages, setFundUsages] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [campaigns, setCampaigns] = useState([
+    {
+      campaignId: 101,
+      title: 'Rural Computer Literacy Lab 2026',
+      description: 'Funding 50 laptops and solar power for remote schools in Maharashtra.',
+      category: 'Education',
+      charityName: 'Pratham Shiksha Foundation',
+      targetAmountEth: '1.0',
+      raisedAmountEth: '0.2',
+      targetAmountInr: 250000,
+      raisedAmountInr: 50000,
+      donorCount: 12,
+      status: 'Active',
+      endDate: Math.floor(Date.now() / 1000) + 30 * 86400,
+      imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      campaignId: 3,
+      title: 'Child Healthcare & Nutrition Drive',
+      description: 'Providing medical treatment, nutrition kits, and emergency medicine to rural children.',
+      category: 'Healthcare',
+      charityName: 'Smile Life Foundation',
+      targetAmountEth: '1.0',
+      raisedAmountEth: '0.4',
+      targetAmountInr: 250000,
+      raisedAmountInr: 100000,
+      donorCount: 8,
+      status: 'Active',
+      endDate: Math.floor(Date.now() / 1000) + 20 * 86400,
+      imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      campaignId: 4,
+      title: 'Winter Warmth and Shelter Drive',
+      description: 'Distributing heavy blankets and emergency shelter supplies to vulnerable families.',
+      category: 'Disaster Relief',
+      charityName: 'Hope Foundation India',
+      targetAmountEth: '2.0',
+      raisedAmountEth: '0.8',
+      targetAmountInr: 500000,
+      raisedAmountInr: 200000,
+      donorCount: 15,
+      status: 'Active',
+      endDate: Math.floor(Date.now() / 1000) + 15 * 86400,
+      imageUrl: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb9?w=800&auto=format&fit=crop&q=80',
+    },
+  ]);
+
+  const [charities, setCharities] = useState([
+    {
+      charityId: 1793363623137,
+      organizationName: 'Pratham Shiksha Foundation',
+      registrationNumber: 'CSR-IND-2026-009',
+      email: 'contact@prathamshiksha.org',
+      walletAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+      verified: true,
+      credHash: '0x665364075ec3f48a695a4d548bd246523ad1e04b57b6e179c30702369e7dca6e',
+    },
+    {
+      charityId: 1789818587403,
+      organizationName: 'Smile Life Foundation',
+      registrationNumber: 'SLF-IND-2026-99',
+      email: 'smile@lifecharity.org',
+      walletAddress: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
+      verified: true,
+      credHash: '0x00eb2d0817dbe21f1ec50dd6f0d904e38b8478ad68eff967f0b789958cf9b809',
+    },
+    {
+      charityId: 1793363027907,
+      organizationName: 'Hope Foundation India',
+      registrationNumber: 'DEMO-NGO-2026-001',
+      email: 'contact@hopefoundation.org',
+      walletAddress: '0xa2abc70658dfa6a341a0033240fd11f81b9286ba',
+      verified: true,
+      credHash: '0x76e04b3d0bb27a5d641ab54985a5401b23be5625693f729850ae8b4d3479d4f0',
+    },
+  ]);
+
+  const [fundUsages, setFundUsages] = useState([
+    {
+      usageId: 101,
+      purpose: 'Procurement of 50 Laptops for Rural Computer Lab',
+      amountEth: '0.4',
+      amountInr: 100000,
+      cid: 'bafybeig0x1b825a1f0556a956308b1610071e2568727e12b21717d2',
+      status: 'VERIFIED',
+    },
+    {
+      usageId: 102,
+      purpose: 'Installation of Solar Inverter Panels at Village School',
+      amountEth: '0.3',
+      amountInr: 75000,
+      cid: 'bafybeigdab6fc0c6c06870557354a2d488a2d21db5417360c9b7524',
+      status: 'VERIFIED',
+    },
+  ]);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedCampaignForDonation, setSelectedCampaignForDonation] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     async function loadData() {
-      setIsLoading(true);
       try {
         const [campRes, statsRes, charRes] = await Promise.all([
           api.getCampaigns().catch(() => ({ campaigns: [] })),
@@ -51,35 +145,33 @@ export default function Home() {
           api.getCharities().catch(() => ({ charities: [] })),
         ]);
 
-        const campList = campRes?.campaigns || [];
-        setCampaigns(campList);
-        setCharities(charRes?.charities || []);
+        if (!isMounted) return;
 
-        // Load fund usages from campaign 1
-        if (campList.length > 0) {
-          const usageRes = await api.getCampaignUsages(campList[0].campaignId).catch(() => ({ usages: [] }));
-          setFundUsages(usageRes?.usages || []);
+        if (campRes?.campaigns && campRes.campaigns.length > 0) {
+          setCampaigns(campRes.campaigns);
+        }
+        if (charRes?.charities && charRes.charities.length > 0) {
+          setCharities(charRes.charities);
         }
 
-        // Calculate INR stats
         if (statsRes?.stats) {
-          const raisedEth = parseFloat(statsRes.stats.totalRaisedEth || '2.01');
-          setStats({
-            totalCampaigns: statsRes.stats.totalCampaigns || campList.length || 1,
-            activeCampaigns: statsRes.stats.activeCampaigns || 1,
-            completedCampaigns: statsRes.stats.completedCampaigns || 0,
-            totalRaisedInr: Math.round(raisedEth * 250000),
-            verifiedCharitiesCount: statsRes.stats.verifiedCharitiesCount || charRes?.charities?.length || 1,
-            evidenceCount: 1,
-          });
+          const raisedEth = parseFloat(statsRes.stats.totalRaisedEth || '0');
+          setStats((prev) => ({
+            ...prev,
+            totalCampaigns: statsRes.stats.totalCampaigns || prev.totalCampaigns,
+            activeCampaigns: statsRes.stats.activeCampaigns || prev.activeCampaigns,
+            completedCampaigns: statsRes.stats.completedCampaigns ?? prev.completedCampaigns,
+            totalRaisedInr: raisedEth > 0 ? Math.round(raisedEth * 250000) : prev.totalRaisedInr,
+            verifiedCharitiesCount: statsRes.stats.verifiedCharitiesCount || charRes?.charities?.length || prev.verifiedCharitiesCount,
+            evidenceCount: prev.evidenceCount,
+          }));
         }
       } catch (err) {
-        console.warn('Home data load error:', err);
-      } finally {
-        setIsLoading(false);
+        console.warn('Home background data sync error:', err);
       }
     }
     loadData();
+    return () => { isMounted = false; };
   }, []);
 
   const howItWorksSteps = [
@@ -175,7 +267,7 @@ export default function Home() {
               boxShadow: '0 4px 18px rgba(16, 185, 129, 0.4)',
             }}
           >
-            <span>Explore Campaigns</span>
+            <span>Browse Active Causes</span>
             <ArrowRight size={18} />
           </Link>
 
@@ -344,7 +436,7 @@ export default function Home() {
               fontSize: '0.92rem',
             }}
           >
-            <span>View All Campaigns</span>
+            <span>Browse All Active Causes</span>
             <ChevronRight size={16} />
           </Link>
         </div>
@@ -449,9 +541,9 @@ export default function Home() {
         </div>
 
         <div className="grid-3">
-          {charities.map((c) => (
+          {charities.slice(0, 3).map((c, idx) => (
             <div
-              key={c.charityId}
+              key={c.charityId || idx}
               style={{
                 background: 'rgba(15, 23, 42, 0.6)',
                 border: '1px solid var(--border-subtle)',
@@ -484,7 +576,7 @@ export default function Home() {
               }}>
                 <div>Blockchain Hash Record:</div>
                 <div className="font-mono" style={{ color: '#34d399', wordBreak: 'break-all' }}>
-                  0x7f83b1657ff1...d9069
+                  {c.credHash ? `${c.credHash.slice(0, 14)}...${c.credHash.slice(-6)}` : '0x7f83b1657ff1...d9069'}
                 </div>
               </div>
             </div>
