@@ -616,6 +616,23 @@ export const api = {
           uploadedAt: new Date(Date.now() - 172800000).toISOString(),
           status: 'VERIFIED',
         },
+        {
+          id: 'ev_1793376813_manifest',
+          evidenceId: 'ev_1793376813_manifest',
+          campaignId: 1793361640328,
+          fileName: 'campaign_testing_manifest.txt',
+          ipfsCid: 'bafybeig0f454da12c87cfc1bdb9d7b8021ea5352a2c4ac7f8f7096e2dd531de47f99f32',
+          cid: 'bafybeig0f454da12c87cfc1bdb9d7b8021ea5352a2c4ac7f8f7096e2dd531de47f99f32',
+          originalSha256Hash: '0x0f454da12c87cfc1bdb9d7b8021ea5352a2c4ac7f8f7096e2dd531de47f99f32',
+          originalHash: '0x0f454da12c87cfc1bdb9d7b8021ea5352a2c4ac7f8f7096e2dd531de47f99f32',
+          amountInr: 50000,
+          purpose: 'Purchase of educational supplies and textbooks',
+          blockchainTransactionHash: '0x3ba887439ca16d0c231ea53c99bdef870e1a0763c0e6e1b8f469a79775ef93b2',
+          blockNumber: 66,
+          uploadedAt: new Date().toISOString(),
+          status: 'VERIFIED',
+          verificationStatus: 'VERIFIED',
+        },
       ];
     }
 

@@ -186,6 +186,20 @@ export default function DonationSuccess() {
                 {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>
             </div>
+            {donation.isMetaMaskRecorded && (
+              <div style={{
+                marginTop: '0.65rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                color: '#34d399',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+              }}>
+                <CheckCircle2 size={14} color="#34d399" />
+                <span>Confirmed on Blockchain & Logged in MetaMask Activity (Tamper-Free)</span>
+              </div>
+            )}
           </div>
         </div>
 

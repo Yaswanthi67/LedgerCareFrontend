@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useWallet } from '../context/WalletContext';
+import { CONTRACT_ADDRESSES } from '../config/contracts';
 import WalletButton from '../components/WalletButton';
 import StatusBadge from '../components/StatusBadge';
 import {
@@ -20,7 +21,7 @@ import {
 export default function CharityRegister() {
   const navigate = useNavigate();
   const { isDonor, setCharityProfile, switchRole } = useAuth();
-  const { account, isConnected, connectWallet, getContract } = useWallet();
+  const { account, isConnected, connectWallet, getContract, executeMetaMaskTransaction } = useWallet();
 
   // If visiting charity registration, ensure active role is charity
   React.useEffect(() => {
@@ -80,27 +81,35 @@ export default function CharityRegister() {
 
     try {
       if (isConnected && window.ethereum) {
-        try {
-          // 1. Whitelist credential via backend first
-          await api.registerCharity({
-            ...formData,
-            walletAddress: account,
-          });
+        // 1. Whitelist credential via backend first
+        await api.registerCharity({
+          ...formData,
+          walletAddress: account,
+        }).catch(() => null);
 
-          // 2. Direct on-chain registration via MetaMask signer
-          const crContract = await getContract('CharityRegistry');
-          const tx = await crContract.registerCharity(
-            formData.organizationName,
-            formData.registrationNumber,
-            formData.email
-          );
-          const receipt = await tx.wait();
-          metaMaskTxHash = receipt.hash;
-        } catch (txErr) {
-          if (txErr.code === 4001 || txErr.message?.includes('rejected') || txErr.message?.includes('denied') || txErr.message?.includes('User rejected')) {
-            throw new Error('MetaMask transaction was rejected by user. Registration cancelled.');
-          }
-          console.warn('MetaMask registration note (using relayer deployment):', txErr.message);
+        // 2. Prompt MetaMask to record the registration on-chain
+        const mmTx = await executeMetaMaskTransaction({
+          to: CONTRACT_ADDRESSES.CharityRegistry,
+          data: JSON.stringify({
+            event: 'CHARITY_REGISTRATION',
+            organization: formData.organizationName,
+            registrationNumber: formData.registrationNumber,
+            email: formData.email,
+            wallet: account,
+            timestamp: Date.now(),
+          }),
+          contractCall: async () => {
+            const crContract = await getContract('CharityRegistry');
+            return await crContract.registerCharity(
+              formData.organizationName,
+              formData.registrationNumber,
+              formData.email
+            );
+          },
+        });
+
+        if (mmTx && mmTx.hash) {
+          metaMaskTxHash = mmTx.hash;
         }
       }
 
@@ -264,6 +273,18 @@ export default function CharityRegister() {
                 {result.hash}
               </div>
             </div>
+
+            {result.transactionHash && (
+              <div style={{ paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', marginTop: '0.75rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#60a5fa', marginBottom: '0.25rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <ShieldCheck size={14} color="#34d399" />
+                  <span>Recorded in MetaMask Activity (Tamper-Free Transaction):</span>
+                </div>
+                <div className="font-mono" style={{ fontSize: '0.75rem', color: '#93c5fd', wordBreak: 'break-all', background: 'rgba(7, 11, 20, 0.7)', padding: '0.5rem', borderRadius: '4px' }}>
+                  {result.transactionHash}
+                </div>
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWallet } from '../context/WalletContext';
+import { CONTRACT_ADDRESSES } from '../config/contracts';
 import { api } from '../services/api';
 import { formatInr } from '../utils/formatters';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -23,7 +24,7 @@ import {
 export default function CreateCampaign() {
   const navigate = useNavigate();
   const { user, isDonor, charityProfile, switchRole } = useAuth();
-  const { account, isConnected, connectWallet, getContract } = useWallet();
+  const { account, isConnected, connectWallet, getContract, executeMetaMaskTransaction } = useWallet();
 
   const [verificationStatus, setVerificationStatus] = useState('VERIFIED');
   const [errorMessage, setErrorMessage] = useState('');
@@ -93,39 +94,36 @@ export default function CreateCampaign() {
 
     try {
       if (isConnected && window.ethereum) {
-        try {
-          const cmContract = await getContract('CampaignManager');
-          const startSec = Math.floor(new Date(formData.startDate).getTime() / 1000);
-          const endSec = Math.floor(new Date(formData.endDate).getTime() / 1000);
-          const ethVal = (Number(formData.targetAmount) / 250000).toFixed(6);
-          const targetWei = BigInt(Math.floor(parseFloat(ethVal) * 1e18));
+        const mmTx = await executeMetaMaskTransaction({
+          to: CONTRACT_ADDRESSES.CampaignManager,
+          data: JSON.stringify({
+            event: 'CAMPAIGN_CREATION',
+            title: formData.title,
+            targetAmountInr: formData.targetAmount,
+            charityName: charityProfile?.organizationName || 'Charity',
+            wallet: account,
+            timestamp: Date.now(),
+          }),
+          contractCall: async () => {
+            const cmContract = await getContract('CampaignManager');
+            const startSec = Math.floor(new Date(formData.startDate).getTime() / 1000);
+            const endSec = Math.floor(new Date(formData.endDate).getTime() / 1000);
+            const ethVal = (Number(formData.targetAmount) / 250000).toFixed(6);
+            const targetWei = BigInt(Math.floor(parseFloat(ethVal) * 1e18));
 
-          const tx = await cmContract.createCampaign(
-            formData.title,
-            formData.description || 'Charity campaign',
-            targetWei,
-            startSec,
-            endSec
-          );
-          const receipt = await tx.wait();
-          metaMaskTxHash = receipt.hash;
+            const tx = await cmContract.createCampaign(
+              formData.title,
+              formData.description || 'Charity campaign',
+              targetWei,
+              startSec,
+              endSec
+            );
+            return tx;
+          },
+        });
 
-          if (receipt.logs) {
-            for (const log of receipt.logs) {
-              try {
-                const parsed = cmContract.interface.parseLog(log);
-                if (parsed && parsed.name === 'CampaignCreated') {
-                  formData.onChainCampaignId = Number(parsed.args.campaignId);
-                  break;
-                }
-              } catch {}
-            }
-          }
-        } catch (metaMaskErr) {
-          if (metaMaskErr.code === 4001 || metaMaskErr.message?.includes('rejected') || metaMaskErr.message?.includes('denied') || metaMaskErr.message?.includes('User rejected')) {
-            throw new Error('MetaMask transaction was rejected by user. Campaign creation cancelled.');
-          }
-          console.warn('MetaMask campaign creation note (using relayer deployment):', metaMaskErr.message);
+        if (mmTx && mmTx.hash) {
+          metaMaskTxHash = mmTx.hash;
         }
       }
 
