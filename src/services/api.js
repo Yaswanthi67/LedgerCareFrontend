@@ -495,6 +495,25 @@ export const api = {
 
   confirmEvidence: async (payload) => {
     try {
+      const stored = JSON.parse(localStorage.getItem('ledgercare_custom_evidence') || '[]');
+      const newEv = {
+        ...payload,
+        id: payload.evidenceId || Date.now(),
+        evidenceId: payload.evidenceId || Date.now(),
+        cid: payload.ipfsCid || payload.cid,
+        ipfsCid: payload.ipfsCid || payload.cid,
+        originalHash: payload.originalSha256Hash || payload.originalHash,
+        originalSha256Hash: payload.originalSha256Hash || payload.originalHash,
+        uploadedAt: new Date().toISOString(),
+        uploadTimestamp: new Date().toISOString(),
+        status: 'VERIFIED',
+        verificationStatus: 'VERIFIED',
+      };
+      stored.unshift(newEv);
+      localStorage.setItem('ledgercare_custom_evidence', JSON.stringify(stored));
+    } catch (_) {}
+
+    try {
       return await request('/evidence/confirm', {
         method: 'POST',
         body: JSON.stringify(payload),
