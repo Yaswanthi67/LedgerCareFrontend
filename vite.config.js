@@ -9,4 +9,15 @@ export default defineConfig({
     host: true,
     open: false,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ethers-vendor': ['ethers'],
+          'icons-vendor': ['lucide-react'],
+        },
+      },
+    },
+  },
 });
