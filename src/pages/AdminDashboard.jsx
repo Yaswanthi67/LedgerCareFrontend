@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { formatInr, ethToInr, formatDateTime } from '../utils/formatters';
@@ -262,7 +262,7 @@ export default function AdminDashboard() {
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Chain ID:</span>
               <div style={{ color: '#ffffff', fontWeight: '600' }}>
-                {healthData.blockchain?.chainId} (Local Hardhat Node)
+                {healthData.blockchain?.chainId || '11155111'} ({healthData.blockchain?.chainId === 1 ? 'Ethereum Mainnet' : (healthData.blockchain?.chainId === 11155111 ? 'Ethereum Sepolia Testnet' : 'Ethereum Network')})
               </div>
             </div>
             <div>

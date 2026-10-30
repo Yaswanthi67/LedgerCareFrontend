@@ -1,10 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import {
-  HARDHAT_CHAIN_ID,
-  HARDHAT_CHAIN_ID_HEX,
-  HARDHAT_NETWORK_CONFIG,
-  getHardhatNetworkConfig,
+  CHAIN_ID,
+  CHAIN_ID_HEX,
+  AVALANCHE_FUJI_CHAIN_ID,
+  AVALANCHE_FUJI_CHAIN_ID_HEX,
+  AVALANCHE_FUJI_NETWORK,
+  SUPPORTED_CHAIN_IDS,
+  isSupportedChain,
+  getNetworkConfig,
+  getNetworkName,
+  getNetworkExplorerUrl,
   CONTRACT_ADDRESSES,
   CHARITY_REGISTRY_ABI,
   CAMPAIGN_MANAGER_ABI,
@@ -117,25 +123,28 @@ export function WalletProvider({ children }) {
     };
   }, [syncProviderState]);
 
-  const isCorrectNetwork = chainId === HARDHAT_CHAIN_ID || chainId === 1337 || chainId === 31337;
+  const isCorrectNetwork = !chainId || isSupportedChain(chainId);
 
-  const switchNetwork = useCallback(async () => {
+  const switchNetwork = useCallback(async (targetChainId = CHAIN_ID) => {
     const eth = getEthereumProvider();
     if (!eth) return;
+
+    const netConfig = getNetworkConfig();
+    const targetHex = netConfig.chainId;
 
     try {
       await eth.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: HARDHAT_CHAIN_ID_HEX }],
+        params: [{ chainId: targetHex }],
       });
-      setChainId(HARDHAT_CHAIN_ID);
+      setChainId(Number(targetChainId));
     } catch (switchError) {
-      if (switchError.code === 4902 || switchError.message?.includes('Unrecognized chain')) {
+      if (switchError.code === 4902 || switchError.message?.includes('Unrecognized chain') || switchError.message?.includes('wallet_addEthereumChain')) {
         await eth.request({
           method: 'wallet_addEthereumChain',
-          params: [getHardhatNetworkConfig()],
+          params: [netConfig],
         });
-        setChainId(HARDHAT_CHAIN_ID);
+        setChainId(Number(targetChainId));
       } else {
         throw switchError;
       }
@@ -183,10 +192,10 @@ export function WalletProvider({ children }) {
         const currentChain = Number(network.chainId);
         setChainId(currentChain);
 
-        // Prompt to switch to Hardhat node if connected to a different chain
-        if (currentChain !== HARDHAT_CHAIN_ID && currentChain !== 1337 && currentChain !== 31337) {
+        // Prompt to switch to Avalanche Fuji if connected to an unsupported chain
+        if (currentChain && !isSupportedChain(currentChain)) {
           try {
-            await switchNetwork();
+            await switchNetwork(CHAIN_ID);
           } catch (switchErr) {
             console.warn('Network switch note:', switchErr);
           }
@@ -328,6 +337,9 @@ export function WalletProvider({ children }) {
     isConnected: Boolean(account),
     isMetaMaskInstalled,
     isCorrectNetwork,
+    networkName: getNetworkName(chainId),
+    getNetworkName,
+    isSupportedChain,
     errorMessage,
     connectWallet,
     disconnectWallet,

@@ -491,7 +491,7 @@ export default function DonorDashboard() {
                     Immutable Blockchain Transaction Records
                   </h3>
                   <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Direct cryptographically verified logs from Hardhat Ethereum contracts (CharityRegistry, CampaignManager, DonationLedger, FundEvidenceTracker).
+                    Direct cryptographically verified logs from Ethereum smart contracts (CharityRegistry, CampaignManager, DonationLedger, FundEvidenceTracker).
                   </p>
                 </div>
                 <Link to="/transparency/blockchain" className="btn btn-secondary btn-sm">

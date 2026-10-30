@@ -21,7 +21,7 @@ import {
 export default function CharityRegister() {
   const navigate = useNavigate();
   const { isDonor, setCharityProfile, switchRole } = useAuth();
-  const { account, isConnected, connectWallet, getContract, executeMetaMaskTransaction } = useWallet();
+  const { account, isConnected, networkName, connectWallet, getContract, executeMetaMaskTransaction } = useWallet();
 
   // If visiting charity registration, ensure active role is charity
   React.useEffect(() => {
@@ -345,7 +345,7 @@ export default function CharityRegister() {
                       {account}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: '#60a5fa', marginTop: '0.15rem' }}>
-                      ✓ Connected to Hardhat Localhost (Chain ID: 31337) &bull; Ready for on-chain organization registration
+                      ✓ Connected to {networkName || 'Ethereum Network'} &bull; Ready for on-chain organization registration
                     </div>
                   </>
                 ) : (

@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Lock,
   Wallet,
+  Power,
 } from 'lucide-react';
 
 const PRESET_AMOUNTS = [100, 500, 1000, 2000];
@@ -27,6 +28,7 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
     account: donorWalletAddress,
     isConnected: isWalletConnected,
     connectWallet,
+    disconnectWallet,
     getContract,
     executeMetaMaskTransaction,
   } = useWallet();
@@ -270,49 +272,111 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
         <div className="modal-body">
           {step === 'input' ? (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {/* Donor MetaMask Wallet Indicator */}
+              {/* Dynamic Donor Web3 Wallet Connection Box */}
               <div style={{
-                padding: '0.6rem 0.85rem',
-                borderRadius: '8px',
-                background: isWalletConnected ? 'rgba(16, 185, 129, 0.08)' : 'rgba(59, 130, 246, 0.06)',
-                border: isWalletConnected ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(59, 130, 246, 0.2)',
+                padding: '0.85rem 1rem',
+                borderRadius: '10px',
+                background: isWalletConnected ? 'rgba(16, 185, 129, 0.08)' : 'rgba(59, 130, 246, 0.08)',
+                border: isWalletConnected ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid rgba(59, 130, 246, 0.35)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                fontSize: '0.78rem',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <Wallet size={15} color={isWalletConnected ? '#34d399' : '#60a5fa'} />
-                  <span>
-                    {isWalletConnected ? (
-                      <>
-                        <strong style={{ color: '#34d399' }}>Connected Wallet:</strong>{' '}
-                        <span className="font-mono">{truncateHash(donorWalletAddress, 6, 4)}</span>
-                      </>
-                    ) : (
-                      <span style={{ color: '#93c5fd' }}>
-                        MetaMask optional: connect wallet to link your on-chain donor ID
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    background: isWalletConnected ? 'rgba(16, 185, 129, 0.18)' : 'rgba(59, 130, 246, 0.18)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <Wallet size={16} color={isWalletConnected ? '#34d399' : '#60a5fa'} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#ffffff' }}>
+                        {isWalletConnected ? 'MetaMask Wallet Connected' : 'Connect Wallet for On-Chain Proof'}
                       </span>
+                      <span style={{
+                        fontSize: '0.65rem',
+                        fontWeight: '700',
+                        padding: '0.1rem 0.45rem',
+                        borderRadius: '9999px',
+                        background: isWalletConnected ? 'rgba(16, 185, 129, 0.2)' : 'rgba(148, 163, 184, 0.15)',
+                        color: isWalletConnected ? '#34d399' : '#94a3b8',
+                        border: isWalletConnected ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(148, 163, 184, 0.3)',
+                      }}>
+                        {isWalletConnected ? 'Connected ✓' : 'Not Connected'}
+                      </span>
+                    </div>
+
+                    {isWalletConnected ? (
+                      <div className="font-mono" style={{ fontSize: '0.78rem', color: '#34d399', marginTop: '0.15rem' }}>
+                        {truncateHash(donorWalletAddress, 8, 6)}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                        Click Connect Wallet to dynamically connect your MetaMask account.
+                      </div>
                     )}
-                  </span>
+                  </div>
                 </div>
-                {!isWalletConnected && (
-                  <button
-                    type="button"
-                    onClick={connectWallet}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#60a5fa',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    Connect
-                  </button>
-                )}
+
+                {/* Interactive Action Controls: Connect or Disconnect */}
+                <div>
+                  {isWalletConnected ? (
+                    <button
+                      type="button"
+                      onClick={disconnectWallet}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '6px',
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        border: '1px solid rgba(239, 68, 68, 0.4)',
+                        color: '#f87171',
+                        fontSize: '0.75rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                      title="Disconnect wallet"
+                    >
+                      <Power size={12} color="#f87171" />
+                      <span>Disconnect</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={connectWallet}
+                      className="btn btn-primary btn-sm"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        padding: '0.4rem 0.85rem',
+                        borderRadius: '6px',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: '#ffffff',
+                        fontSize: '0.78rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        border: 'none',
+                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                      }}
+                    >
+                      <Wallet size={13} />
+                      <span>Connect Wallet</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Amount Picker */}

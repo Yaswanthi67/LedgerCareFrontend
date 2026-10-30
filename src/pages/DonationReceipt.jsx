@@ -336,7 +336,7 @@ Blockchain Smart Contract Ledger: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
           </div>
 
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-            Ethereum / Hardhat Transaction Hash:
+            Ethereum Blockchain Transaction Hash:
           </div>
           <div className="font-mono" style={{ fontSize: '0.75rem', color: '#34d399', wordBreak: 'break-all', marginBottom: '0.75rem' }}>
             {donation.transactionHash || '0xd6fbbbacec62efb5b1b659e876697aee98bef1e8cf7decd04aaae8d9d0d2be0c'}

@@ -1,45 +1,60 @@
-export const CHAIN_ID = Number(import.meta.env?.VITE_CHAIN_ID || 31337);
+// ==========================================
+// AVALANCHE FUJI C-CHAIN CONFIGURATION
+// ==========================================
+export const AVALANCHE_FUJI_CHAIN_ID = 43113;
+export const AVALANCHE_FUJI_CHAIN_ID_HEX = '0xa869';
+
+// Primary network: Avalanche Fuji C-Chain Testnet
+export const CHAIN_ID = Number(import.meta.env?.VITE_CHAIN_ID || AVALANCHE_FUJI_CHAIN_ID);
 export const CHAIN_ID_HEX = `0x${CHAIN_ID.toString(16)}`;
-export const HARDHAT_CHAIN_ID = CHAIN_ID;
-export const HARDHAT_CHAIN_ID_HEX = CHAIN_ID_HEX;
+
+export const SUPPORTED_CHAIN_IDS = [AVALANCHE_FUJI_CHAIN_ID];
+
+export const isSupportedChain = (chainId) => {
+  if (!chainId) return false;
+  return Number(chainId) === AVALANCHE_FUJI_CHAIN_ID;
+};
+
+export const AVALANCHE_FUJI_NETWORK = {
+  chainId: AVALANCHE_FUJI_CHAIN_ID_HEX,
+  chainName: 'Avalanche Fuji C-Chain',
+  nativeCurrency: {
+    name: 'Avalanche',
+    symbol: 'AVAX',
+    decimals: 18,
+  },
+  rpcUrls: [
+    'https://api.avax-test.network/ext/bc/C/rpc',
+    'https://avalanche-fuji-c-chain-rpc.publicnode.com',
+  ],
+  blockExplorerUrls: ['https://testnet.snowtrace.io'],
+};
 
 export const getRpcUrl = () => {
   if (import.meta.env?.VITE_RPC_URL) {
     return import.meta.env.VITE_RPC_URL;
   }
-  if (typeof window !== 'undefined' && window.location) {
-    const host = window.location.hostname;
-    // When accessed from another device or remote domain, route RPC requests through backend proxy
-    if (host && host !== 'localhost' && host !== '127.0.0.1') {
-      return `${window.location.origin}/api/rpc`;
-    }
-  }
-  return 'http://127.0.0.1:8545';
+  return 'https://api.avax-test.network/ext/bc/C/rpc';
 };
 
-export const getHardhatNetworkConfig = () => {
-  const rpc = getRpcUrl();
-  const isSepolia = CHAIN_ID === 11155111;
-  return {
-    chainId: CHAIN_ID_HEX,
-    chainName: isSepolia ? 'Sepolia Test Network' : 'LedgerCare Blockchain Network',
-    nativeCurrency: {
-      name: 'Ethereum',
-      symbol: 'ETH',
-      decimals: 18,
-    },
-    rpcUrls: [rpc],
-    blockExplorerUrls: isSepolia ? ['https://sepolia.etherscan.io'] : null,
-  };
+export const getNetworkConfig = () => AVALANCHE_FUJI_NETWORK;
+
+export const getNetworkName = (chainId) => {
+  const id = Number(chainId);
+  if (id === AVALANCHE_FUJI_CHAIN_ID) return 'Avalanche Fuji C-Chain';
+  return 'Wrong Network (Switch to Avalanche Fuji)';
 };
 
-export const HARDHAT_NETWORK_CONFIG = getHardhatNetworkConfig();
+export const getNetworkExplorerUrl = (txOrAddress, type = 'tx') => {
+  if (!txOrAddress) return null;
+  return `https://testnet.snowtrace.io/${type}/${txOrAddress}`;
+};
 
 export const CONTRACT_ADDRESSES = {
-  CharityRegistry: '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE',
-  CampaignManager: '0x68B1D87F95878fE05B998F19b66F4baba5De1aed',
-  DonationLedger: '0x3Aa5ebB10DC797CAC828524e59A333d0A371443c',
-  FundEvidenceTracker: '0x59b670e9fA9D0A427751Af201D676719a970857b',
+  CharityRegistry: import.meta.env?.VITE_CHARITY_REGISTRY_ADDRESS || '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE',
+  CampaignManager: import.meta.env?.VITE_CAMPAIGN_MANAGER_ADDRESS || '0x68B1D87F95878fE05B998F19b66F4baba5De1aed',
+  DonationLedger: import.meta.env?.VITE_DONATION_LEDGER_ADDRESS || '0x3Aa5ebB10DC797CAC828524e59A333d0A371443c',
+  FundEvidenceTracker: import.meta.env?.VITE_FUND_EVIDENCE_TRACKER_ADDRESS || '0x59b670e9fA9D0A427751Af201D676719a970857b',
 };
 
 export const CHARITY_REGISTRY_ABI = [
@@ -65,6 +80,11 @@ export const CAMPAIGN_MANAGER_ABI = [
   'function getCharityCampaigns(address charityWallet) external view returns (uint256[] memory)',
   'function completeCampaign(uint256 campaignId) external',
   'function cancelCampaign(uint256 campaignId) external',
+  'function recordDonation(uint256 campaignId, uint256 amount) external',
+  'function recordWithdrawal(uint256 campaignId, uint256 amount) external',
+  'function setDonationLedger(address _donationLedger) external',
+  'function donationLedger() external view returns (address)',
+  'function charityRegistry() external view returns (address)',
   'function campaigns(uint256) external view returns (uint256 campaignId, uint256 charityId, address charityWallet, string title, string description, uint256 targetAmount, uint256 raisedAmount, uint256 withdrawnAmount, uint256 startDate, uint256 endDate, uint8 status)',
   'event CampaignCreated(uint256 indexed campaignId, uint256 indexed charityId, address indexed charityWallet, string title, uint256 targetAmount, uint256 startDate, uint256 endDate)',
   'event CampaignStatusUpdated(uint256 indexed campaignId, uint8 status)',
@@ -73,13 +93,18 @@ export const CAMPAIGN_MANAGER_ABI = [
 ];
 
 export const DONATION_LEDGER_ABI = [
+  'function recordDonation(uint256 campaignId, uint256 amountInPaise, string memory donationReference) external returns (uint256)',
   'function donate(uint256 campaignId) external payable',
   'function withdrawFunds(uint256 campaignId, uint256 amount) external',
-  'function getDonation(uint256 donationId) external view returns (tuple(uint256 donationId, uint256 campaignId, address donor, uint256 amount, uint256 timestamp))',
-  'function getCampaignDonations(uint256 campaignId) external view returns (uint256[] memory)',
-  'function getDonorDonations(address donor) external view returns (uint256[] memory)',
+  'function getDonationById(uint256 donationId) external view returns (tuple(uint256 donationId, uint256 campaignId, address donor, uint256 amountInPaise, string donationReference, uint256 timestamp))',
+  'function getDonation(uint256 donationId) external view returns (tuple(uint256 donationId, uint256 campaignId, address donor, uint256 amountInPaise, string donationReference, uint256 timestamp))',
+  'function getDonationsByDonor(address donor) external view returns (uint256[] memory)',
+  'function getDonationsByCampaign(uint256 campaignId) external view returns (uint256[] memory)',
+  'function getCampaignDonationTotal(uint256 campaignId) external view returns (uint256)',
   'function getBalance() external view returns (uint256)',
-  'event DonationRecorded(uint256 indexed donationId, uint256 indexed campaignId, address indexed donor, uint256 amount, uint256 timestamp)',
+  'function usedReferences(string) external view returns (bool)',
+  'function campaignManager() external view returns (address)',
+  'event DonationRecorded(uint256 indexed donationId, uint256 indexed campaignId, address indexed donor, uint256 amountInPaise, string donationReference, uint256 timestamp)',
   'event FundsWithdrawn(uint256 indexed campaignId, address indexed charityWallet, uint256 amount, uint256 timestamp)',
 ];
 

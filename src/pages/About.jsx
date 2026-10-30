@@ -104,7 +104,7 @@ export default function About() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <span style={{ padding: '0.2rem 0.6rem', background: '#10b981', color: '#fff', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '700' }}>BLOCKCHAIN</span>
-            <span style={{ fontSize: '0.85rem', color: '#ffffff' }}>Hardhat/Solidity Smart Contracts: CharityRegistry, CampaignManager, DonationLedger, FundEvidenceTracker.</span>
+            <span style={{ fontSize: '0.85rem', color: '#ffffff' }}>Ethereum / Solidity Smart Contracts: CharityRegistry, CampaignManager, DonationLedger, FundEvidenceTracker.</span>
           </div>
         </div>
       </div>

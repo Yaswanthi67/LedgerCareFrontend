@@ -33,6 +33,7 @@ export default function WalletButton() {
   const {
     account,
     chainId,
+    networkName,
     isConnecting,
     isConnected,
     isCorrectNetwork,
@@ -247,7 +248,7 @@ export default function WalletButton() {
                 fontWeight: '600',
               }}
             >
-              {isCorrectNetwork ? 'Hardhat Node' : `Chain: ${chainId || 'Unknown'}`}
+              {isCorrectNetwork ? (networkName || 'Ethereum Network') : `Chain: ${chainId || 'Unknown'}`}
             </span>
           </div>
 
@@ -286,10 +287,10 @@ export default function WalletButton() {
               }}
             >
               <div style={{ fontSize: '0.72rem', color: '#f87171', marginBottom: '0.4rem', fontWeight: '500' }}>
-                You are on an unsupported network. Switch to Hardhat Localhost (31337).
+                You are on an unsupported network. Switch to Ethereum Sepolia.
               </div>
               <button
-                onClick={switchNetwork}
+                onClick={() => switchNetwork(11155111)}
                 style={{
                   width: '100%',
                   display: 'flex',
@@ -307,7 +308,7 @@ export default function WalletButton() {
                 }}
               >
                 <RefreshCw size={13} />
-                Switch to Hardhat Network
+                Switch to Ethereum Sepolia
               </button>
             </div>
           )}

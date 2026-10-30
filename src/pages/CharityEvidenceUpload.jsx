@@ -219,7 +219,7 @@ export default function CharityEvidenceUpload() {
       }
 
       // Step 8: After confirmation, retrieve transaction hash and transaction status
-      setUploadStep('Step 3/3: Transaction submitted! Waiting for block confirmation on Hardhat network...');
+      setUploadStep('Step 3/3: Transaction submitted! Waiting for block confirmation on Ethereum network...');
       const receipt = await tx.wait(1);
 
       const txHash = tx.hash || receipt.hash;

@@ -75,10 +75,10 @@ export default function CharityDashboard() {
       (c.charityAddress && c.charityAddress.toLowerCase() === connectedAddr)
   );
 
-  const isHardhatDeployer = connectedAddr === '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266' || connectedAddr === '0x70997970c51812dc3a010c7d01b50e0d17dc79c8';
-  const isVerified = isConnected && Boolean(matchedCharity || isHardhatDeployer);
+  const isGenesisAdminWallet = connectedAddr === '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266' || connectedAddr === '0x70997970c51812dc3a010c7d01b50e0d17dc79c8';
+  const isVerified = isConnected && Boolean(matchedCharity || isGenesisAdminWallet);
   const activeOrgName = isConnected
-    ? (matchedCharity?.organizationName || (isHardhatDeployer ? 'LedgerCare Foundation' : 'Charity Organization'))
+    ? (matchedCharity?.organizationName || (isGenesisAdminWallet ? 'LedgerCare Foundation' : 'Charity Organization'))
     : 'No Wallet Connected';
 
   useEffect(() => {

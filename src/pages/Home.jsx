@@ -107,7 +107,7 @@ export default function Home() {
       organizationName: 'Hope Foundation India',
       registrationNumber: 'DEMO-NGO-2026-001',
       email: 'contact@hopefoundation.org',
-      walletAddress: '0xa2abc70658dfa6a341a0033240fd11f81b9286ba',
+      walletAddress: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',
       verified: true,
       credHash: '0x76e04b3d0bb27a5d641ab54985a5401b23be5625693f729850ae8b4d3479d4f0',
     },

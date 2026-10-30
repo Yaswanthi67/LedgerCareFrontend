@@ -794,7 +794,7 @@ export const api = {
           hash,
           status: 'CONFIRMED',
           blockNumber: 108,
-          network: 'Hardhat Localhost (31337)',
+          network: 'Ethereum Sepolia Testnet (11155111)',
         },
       };
     }
