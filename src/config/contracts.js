@@ -1,10 +1,15 @@
-export const HARDHAT_CHAIN_ID = 31337;
-export const HARDHAT_CHAIN_ID_HEX = '0x7a69';
+export const CHAIN_ID = Number(import.meta.env?.VITE_CHAIN_ID || 31337);
+export const CHAIN_ID_HEX = `0x${CHAIN_ID.toString(16)}`;
+export const HARDHAT_CHAIN_ID = CHAIN_ID;
+export const HARDHAT_CHAIN_ID_HEX = CHAIN_ID_HEX;
 
 export const getRpcUrl = () => {
+  if (import.meta.env?.VITE_RPC_URL) {
+    return import.meta.env.VITE_RPC_URL;
+  }
   if (typeof window !== 'undefined' && window.location) {
     const host = window.location.hostname;
-    // When accessed from another device (LAN IP or public tunnel/domain), use backend RPC proxy
+    // When accessed from another device or remote domain, route RPC requests through backend proxy
     if (host && host !== 'localhost' && host !== '127.0.0.1') {
       return `${window.location.origin}/api/rpc`;
     }
@@ -14,16 +19,17 @@ export const getRpcUrl = () => {
 
 export const getHardhatNetworkConfig = () => {
   const rpc = getRpcUrl();
+  const isSepolia = CHAIN_ID === 11155111;
   return {
-    chainId: HARDHAT_CHAIN_ID_HEX,
-    chainName: 'Hardhat Node (LedgerCare)',
+    chainId: CHAIN_ID_HEX,
+    chainName: isSepolia ? 'Sepolia Test Network' : 'LedgerCare Blockchain Network',
     nativeCurrency: {
       name: 'Ethereum',
       symbol: 'ETH',
       decimals: 18,
     },
     rpcUrls: [rpc],
-    blockExplorerUrls: null,
+    blockExplorerUrls: isSepolia ? ['https://sepolia.etherscan.io'] : null,
   };
 };
 
