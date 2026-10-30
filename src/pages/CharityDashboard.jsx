@@ -28,7 +28,7 @@ import {
 
 export default function CharityDashboard() {
   const { charityProfile, isCharity, switchRole } = useAuth();
-  const { account, isConnected, disconnectWallet } = useWallet();
+  const { account, isConnected, connectWallet, disconnectWallet } = useWallet();
   const [copied, setCopied] = useState(false);
 
   const copyAddress = () => {

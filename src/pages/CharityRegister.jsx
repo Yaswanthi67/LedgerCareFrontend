@@ -190,7 +190,7 @@ export default function CharityRegister() {
           Charity Registration
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '600px', margin: '0 auto' }}>
-          Register your non-profit organization. The system normalizes your credentials, generates a cryptographic hash, and records it directly to <code>CharityRegistry.sol</code> and MongoDB.
+          Register your non-profit organization. The system normalizes your credentials, generates a cryptographic hash, and permanently records it on the blockchain.
         </p>
       </div>
 
@@ -324,7 +324,7 @@ export default function CharityRegister() {
                       {account}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: '#60a5fa', marginTop: '0.15rem' }}>
-                      ✓ Connected to Hardhat Localhost (Chain ID: 31337) &bull; Ready for CharityRegistry.sol registration
+                      ✓ Connected to Hardhat Localhost (Chain ID: 31337) &bull; Ready for on-chain organization registration
                     </div>
                   </>
                 ) : (
@@ -596,7 +596,7 @@ export default function CharityRegister() {
             }}>
               <ShieldCheck size={18} color="#60a5fa" style={{ flexShrink: 0, marginTop: '2px' }} />
               <span>
-                <strong>Instant Smart Contract Verification:</strong> Registration computes a deterministic Keccak-256 credential hash that is validated and permanently recorded on <code>CharityRegistry.sol</code> and MongoDB Atlas.
+                <strong>Instant Verification:</strong> Registration computes a deterministic Keccak-256 credential hash that is validated and permanently recorded on the blockchain and MongoDB Atlas.
               </span>
             </div>
 

@@ -69,7 +69,7 @@ export default function CharitiesList() {
           Verified Charities Directory
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-          Explore non-profit organizations that have satisfied cryptographic hash verification on <code>CharityRegistry.sol</code>.
+          Explore non-profit organizations that have satisfied cryptographic verification on the blockchain.
         </p>
       </div>
 
