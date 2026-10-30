@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export default function Navbar() {
-  const { role, switchRole, isDonor, isCharity, isAdmin } = useAuth();
+  const { role, user, switchRole, isDonor, isCharity, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const location = useLocation();
@@ -38,7 +38,11 @@ export default function Navbar() {
   ];
 
   const roleConfig = {
-    donor: { label: 'Donor Mode', color: '#60a5fa', icon: <Heart size={13} /> },
+    donor: {
+      label: user?.name ? user.name : 'Donor Mode',
+      color: '#60a5fa',
+      icon: <Heart size={13} />,
+    },
     charity: { label: 'Charity Portal', color: '#34d399', icon: <Building2 size={13} /> },
     admin: { label: 'Admin Monitor', color: '#a855f7', icon: <Lock size={13} /> },
   };
@@ -238,6 +242,28 @@ export default function Navbar() {
                   <Lock size={14} color="#c084fc" />
                   <span>Admin Auditor</span>
                 </button>
+
+                {isDonor && (
+                  <>
+                    <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '0.4rem 0' }} />
+                    <Link
+                      to="/donor/login"
+                      onClick={() => setRoleDropdownOpen(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.78rem',
+                        color: '#60a5fa',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <User size={13} />
+                      <span>{user?.name ? `Signed in: ${user.name} (Edit)` : 'Donor Sign In / Set Name'}</span>
+                    </Link>
+                  </>
+                )}
 
                 {!isDonor && (
                   <>

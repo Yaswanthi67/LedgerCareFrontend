@@ -94,9 +94,27 @@ export default function DonorDashboard() {
             <Heart size={13} />
             <span>Donor Hub</span>
           </div>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: '800', color: '#ffffff' }}>
-            Welcome back, {user?.name || 'Priya Patel'}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.4rem' }}>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: '800', color: '#ffffff' }}>
+              Welcome back, {user?.name || 'Donor'}
+            </h1>
+            <Link
+              to="/donor/login"
+              className="btn btn-secondary btn-sm"
+              style={{
+                fontSize: '0.75rem',
+                padding: '0.25rem 0.65rem',
+                borderRadius: '9999px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+              }}
+              title="Change your donor name and details"
+            >
+              <User size={12} />
+              <span>{user?.name ? 'Edit Profile' : 'Set Your Name'}</span>
+            </Link>
+          </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem' }}>
             Browse verified charities, track transparent campaign progress, donate via UPI, and audit evidence authenticity on-chain.
           </p>

@@ -136,6 +136,7 @@ export default function App() {
                   {/* User Dashboards & Auth */}
                   <Route path="/dashboard" element={<DonorDashboard />} />
                   <Route path="/donor" element={<DonorDashboard />} />
+                  <Route path="/donor/login" element={<Login />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Login />} />
 

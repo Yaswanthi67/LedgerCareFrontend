@@ -21,7 +21,7 @@ const PRESET_AMOUNTS = [100, 500, 1000, 2000];
 
 export default function DonationModal({ campaign, isOpen, onClose, onDonationSuccess }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { account: donorWalletAddress, isConnected: isWalletConnected, connectWallet } = useWallet();
 
   const [amount, setAmount] = useState(500);
@@ -114,6 +114,13 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
       }
 
       if (verifyRes && verifyRes.success) {
+        if (donorName && donorName.trim() && updateUser) {
+          updateUser({
+            name: donorName.trim(),
+            email: donorEmail.trim() || user?.email,
+            phone: donorPhone.trim() || user?.phone,
+          });
+        }
         if (onDonationSuccess) onDonationSuccess(verifyRes);
         onClose();
 
@@ -413,7 +420,7 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Priya Patel"
+                    placeholder="e.g. Rahul Sharma or your name"
                     value={donorName}
                     onChange={(e) => setDonorName(e.target.value)}
                     className="form-input"
@@ -426,7 +433,7 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
                     <input
                       type="email"
                       required
-                      placeholder="priya@example.com"
+                      placeholder="your.email@example.com"
                       value={donorEmail}
                       onChange={(e) => setDonorEmail(e.target.value)}
                       className="form-input"

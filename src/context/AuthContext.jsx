@@ -9,12 +9,17 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('lc_user_data');
     if (saved) {
-      try { return JSON.parse(saved); } catch {}
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.name && parsed.name !== 'Priya Patel') {
+          return parsed;
+        }
+      } catch {}
     }
     return {
-      name: 'Priya Patel',
-      email: 'priya@example.com',
-      phone: '9820098200',
+      name: '',
+      email: '',
+      phone: '',
     };
   });
 
@@ -82,7 +87,22 @@ export function AuthProvider({ children }) {
 
   const loginAs = (selectedRole, customUser = null) => {
     setRole(selectedRole);
-    if (customUser) setUser(customUser);
+    if (customUser) {
+      setUser(customUser);
+      try {
+        localStorage.setItem('lc_user_data', JSON.stringify(customUser));
+      } catch (_) {}
+    }
+  };
+
+  const updateUser = (userData) => {
+    setUser((prev) => {
+      const updated = { ...prev, ...userData };
+      try {
+        localStorage.setItem('lc_user_data', JSON.stringify(updated));
+      } catch (_) {}
+      return updated;
+    });
   };
 
   const logout = () => {
@@ -111,6 +131,7 @@ export function AuthProvider({ children }) {
         loginAs,
         logout,
         setUser,
+        updateUser,
         setCharityProfile,
         updateCharityStatus,
       }}

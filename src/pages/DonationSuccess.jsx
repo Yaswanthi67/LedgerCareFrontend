@@ -1,5 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { formatInr, formatDate, formatDateTime, truncateHash } from '../utils/formatters';
 import StatusBadge from '../components/StatusBadge';
 import {
@@ -16,13 +17,14 @@ import {
 export default function DonationSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [copied, setCopied] = React.useState(false);
 
   const donation = location.state?.donation || {
     campaignTitle: 'Education Support Campaign',
     charityName: 'LedgerCare Demo Charity',
     amountInr: 1000,
-    donorName: 'Priya Patel',
+    donorName: user?.name || 'Valued Donor',
     orderId: 'order_demo_12345',
     donationId: 4,
     transactionHash: '0xd6fbbbacec62efb5b1b659e876697aee98bef1e8cf7decd04aaae8d9d0d2be0c',

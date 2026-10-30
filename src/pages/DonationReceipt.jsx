@@ -1,5 +1,6 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatInr, formatDateTime, formatDate, truncateHash } from '../utils/formatters';
 import StatusBadge from '../components/StatusBadge';
@@ -17,6 +18,7 @@ import {
 export default function DonationReceipt() {
   const { id } = useParams();
   const location = useLocation();
+  const { user } = useAuth();
 
   const [donation, setDonation] = useState(location.state?.donation || null);
   const [isLoading, setIsLoading] = useState(!donation);
@@ -42,8 +44,8 @@ export default function DonationReceipt() {
               donationId: id,
               campaignTitle: 'Education Support Campaign',
               charityName: 'LedgerCare Demo Charity',
-              donorName: 'Priya Patel',
-              donorEmail: 'priya@example.com',
+              donorName: user?.name || 'Valued Donor',
+              donorEmail: user?.email || 'donor@ledgercare.org',
               amountInr: 1000,
               paymentStatus: 'PAID',
               blockchainStatus: 'CONFIRMED',
@@ -57,8 +59,8 @@ export default function DonationReceipt() {
             donationId: id,
             campaignTitle: 'Education Support Campaign',
             charityName: 'LedgerCare Demo Charity',
-            donorName: 'Priya Patel',
-            donorEmail: 'priya@example.com',
+            donorName: user?.name || 'Valued Donor',
+            donorEmail: user?.email || 'donor@ledgercare.org',
             amountInr: 1000,
             paymentStatus: 'PAID',
             blockchainStatus: 'CONFIRMED',
@@ -85,8 +87,8 @@ LEDGERCARE OFFICIAL DONATION RECEIPT
 Receipt ID: ${donation?.donationId || id}
 Date: ${formatDateTime(donation?.date)}
 
-Donor: ${donation?.donorName || 'Priya Patel'}
-Email: ${donation?.donorEmail || 'priya@example.com'}
+Donor: ${donation?.donorName || user?.name || 'Valued Donor'}
+Email: ${donation?.donorEmail || user?.email || 'donor@ledgercare.org'}
 
 Campaign: ${donation?.campaignTitle || 'Education Support Campaign'}
 Charity: ${donation?.charityName || 'LedgerCare Demo Charity'} (Verified ✓)
@@ -242,10 +244,10 @@ Blockchain Smart Contract Ledger: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
               Donor Information
             </div>
             <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#ffffff' }}>
-              {donation.donorName || 'Priya Patel'}
+              {donation.donorName || user?.name || 'Valued Donor'}
             </div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              {donation.donorEmail || 'priya@example.com'}
+              {donation.donorEmail || user?.email || 'donor@ledgercare.org'}
             </div>
             <div style={{ fontSize: '0.8rem', color: '#34d399', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               <CheckCircle2 size={13} />
