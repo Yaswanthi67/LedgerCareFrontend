@@ -165,11 +165,11 @@ export default function EvidenceVerification() {
           match: isMatch,
           status: isMatch ? 'VERIFIED' : 'TAMPERED',
           statusText: isMatch
-            ? 'VERIFIED – Evidence is authentic and unchanged.'
-            : 'TAMPERED – Evidence has been modified or does not match the original registered evidence.',
+            ? 'VERIFIED – Evidence is authentic and unchanged'
+            : 'TAMPERED – Evidence has been modified or does not match the registered file',
           message: isMatch
-            ? 'VERIFIED – Evidence is authentic and unchanged.'
-            : 'TAMPERED – Evidence has been modified or does not match the original registered evidence.',
+            ? 'VERIFIED – Evidence is authentic and unchanged'
+            : 'TAMPERED – Evidence has been modified or does not match the registered file',
           originalSha256Hash: origHash,
           calculatedSha256Hash: computedSha256,
           originalHash: origHash,
@@ -189,97 +189,6 @@ export default function EvidenceVerification() {
     }
   };
 
-  // 4. Quick Test: Authentic File (expected MATCH)
-  const handleQuickAuthenticTest = async () => {
-    setIsVerifying(true);
-    setErrorMessage('');
-    setVerificationResult(null);
-
-    try {
-      const res = await api.verifyEvidence({
-        evidenceId: selectedEvidence.evidenceId,
-        cid: selectedEvidence.ipfsCid,
-      });
-
-      setVerificationResult(res);
-    } catch (err) {
-      // Deterministic simulation
-      setVerificationResult({
-        success: true,
-        verified: true,
-        status: 'VERIFIED',
-        statusText: 'VERIFIED – Evidence is authentic and unchanged',
-        originalSha256Hash: selectedEvidence.originalSha256Hash,
-        calculatedSha256Hash: selectedEvidence.originalSha256Hash,
-        ipfsCid: selectedEvidence.ipfsCid,
-        verificationTimestamp: new Date().toISOString(),
-        fileName: selectedEvidence.fileName,
-        blockchainTransactionHash: selectedEvidence.blockchainTransactionHash,
-      });
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  // 5. Quick Test: Tampered File (expected TAMPERED)
-  const handleQuickTamperedTest = async () => {
-    setIsVerifying(true);
-    setErrorMessage('');
-    setVerificationResult(null);
-
-    try {
-      const res = await api.verifyEvidence({
-        evidenceId: selectedEvidence.evidenceId,
-        cid: selectedEvidence.ipfsCid,
-        simulateTamper: true,
-      });
-
-      setVerificationResult(res);
-    } catch (err) {
-      // Deterministic tampered hash simulation
-      setVerificationResult({
-        success: true,
-        verified: false,
-        status: 'TAMPERED',
-        statusText: 'TAMPERED – Evidence has been modified or does not match the original registered evidence.',
-        originalSha256Hash: selectedEvidence.originalSha256Hash,
-        calculatedSha256Hash: '0x8f2d3a9b1c4e7f0a8d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e',
-        ipfsCid: selectedEvidence.ipfsCid,
-        verificationTimestamp: new Date().toISOString(),
-        fileName: selectedEvidence.fileName,
-        campaignId: selectedEvidence.campaignId,
-        evidenceId: selectedEvidence.evidenceId,
-        blockchainTransactionHash: selectedEvidence.blockchainTransactionHash,
-      });
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  // 6. Quick Test: IPFS Retrieval Failure (expected VERIFICATION FAILED)
-  const handleQuickIpfsFailureTest = () => {
-    setIsVerifying(true);
-    setErrorMessage('');
-    setVerificationResult(null);
-    setTimeout(() => {
-      setVerificationResult({
-        success: false,
-        verified: false,
-        status: 'VERIFICATION FAILED',
-        statusText: 'VERIFICATION FAILED – Unable to verify evidence.',
-        message: 'IPFS gateway timeout: Unable to download original file bytes for CID verification.',
-        originalSha256Hash: selectedEvidence.originalSha256Hash,
-        calculatedSha256Hash: 'N/A (IPFS Retrieval Failed)',
-        ipfsCid: selectedEvidence.ipfsCid,
-        verificationTimestamp: new Date().toISOString(),
-        fileName: selectedEvidence.fileName,
-        campaignId: selectedEvidence.campaignId,
-        evidenceId: selectedEvidence.evidenceId,
-        blockchainTransactionHash: selectedEvidence.blockchainTransactionHash,
-      });
-      setIsVerifying(false);
-    }, 450);
-  };
 
   const copyHash = (hash, isOriginal = true) => {
     if (!hash) return;
@@ -506,37 +415,6 @@ export default function EvidenceVerification() {
             </label>
           </div>
 
-          {/* Quick Simulation Presets */}
-          <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '600' }}>Demo Simulation:</span>
-            <button
-              type="button"
-              onClick={handleQuickAuthenticTest}
-              disabled={isVerifying}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.78rem' }}
-            >
-              Test Authentic Evidence (Match)
-            </button>
-            <button
-              type="button"
-              onClick={handleQuickTamperedTest}
-              disabled={isVerifying}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.78rem', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#f87171' }}
-            >
-              Test Tampered Evidence (Mismatch)
-            </button>
-            <button
-              type="button"
-              onClick={handleQuickIpfsFailureTest}
-              disabled={isVerifying}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.78rem', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#fbbf24' }}
-            >
-              Test IPFS Failure (Error)
-            </button>
-          </div>
 
           {errorMessage && (
             <div style={{

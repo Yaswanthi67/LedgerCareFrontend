@@ -550,35 +550,41 @@ export default function CharityEvidenceUpload() {
         </div>
       ) : (
         /* Upload Form (Steps 3 - 7) */
-        <div className="card" style={{ padding: '2.5rem 2rem', marginBottom: '2.5rem' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="card" style={{ padding: '2.5rem 2rem', marginBottom: '2.5rem', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', boxSizing: 'border-box' }}>
             {/* Campaign & Doc Type */}
-            <div className="grid-2">
-              <div className="form-group">
+            <div className="grid-2" style={{ width: '100%' }}>
+              <div className="form-group" style={{ minWidth: 0, width: '100%' }}>
                 <label className="form-label">Associate with Campaign *</label>
                 <select
                   value={campaignId}
                   onChange={(e) => setCampaignId(e.target.value)}
                   className="form-select"
+                  style={{ width: '100%', maxWidth: '100%', minWidth: 0, textOverflow: 'ellipsis' }}
                 >
                   {campaigns.length > 0 ? (
-                    campaigns.map((c) => (
-                      <option key={c.campaignId} value={c.campaignId}>
-                        #{c.campaignId}: {c.title || c.campaignTitle}
-                      </option>
-                    ))
+                    campaigns.map((c) => {
+                      const fullTitle = c.title || c.campaignTitle || 'Charity Campaign';
+                      const displayTitle = fullTitle.length > 42 ? fullTitle.substring(0, 40) + '...' : fullTitle;
+                      return (
+                        <option key={c.campaignId} value={c.campaignId} title={fullTitle}>
+                          #{c.campaignId}: {displayTitle}
+                        </option>
+                      );
+                    })
                   ) : (
                     <option value="1">#1: Education Support Campaign</option>
                   )}
                 </select>
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ minWidth: 0, width: '100%' }}>
                 <label className="form-label">Evidence Document Type *</label>
                 <select
                   value={documentType}
                   onChange={(e) => setDocumentType(e.target.value)}
                   className="form-select"
+                  style={{ width: '100%', maxWidth: '100%', minWidth: 0 }}
                 >
                   <option value="Official Bill / Invoice">Official Bill / Invoice</option>
                   <option value="Vendor Receipt">Vendor Payment Receipt</option>
@@ -590,8 +596,8 @@ export default function CharityEvidenceUpload() {
             </div>
 
             {/* Purpose & Amount */}
-            <div className="grid-2">
-              <div className="form-group">
+            <div className="grid-2" style={{ width: '100%' }}>
+              <div className="form-group" style={{ minWidth: 0, width: '100%' }}>
                 <label className="form-label">Expenditure Purpose *</label>
                 <input
                   type="text"
@@ -600,10 +606,11 @@ export default function CharityEvidenceUpload() {
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
                   className="form-input"
+                  style={{ width: '100%', maxWidth: '100%', minWidth: 0 }}
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ minWidth: 0, width: '100%' }}>
                 <label className="form-label">Total Amount Spent in INR (₹) *</label>
                 <input
                   type="number"
@@ -613,6 +620,7 @@ export default function CharityEvidenceUpload() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="form-input"
+                  style={{ width: '100%', maxWidth: '100%', minWidth: 0 }}
                 />
               </div>
             </div>
