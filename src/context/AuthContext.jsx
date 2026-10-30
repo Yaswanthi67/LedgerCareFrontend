@@ -27,18 +27,14 @@ export function AuthProvider({ children }) {
   const [charityProfile, setCharityProfile] = useState(() => {
     const saved = localStorage.getItem('lc_charity_profile');
     if (saved) {
-      try { return JSON.parse(saved); } catch {}
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.organizationName && parsed.organizationName !== 'LedgerCare Demo Charity') {
+          return parsed;
+        }
+      } catch {}
     }
-    return {
-      id: 1,
-      organizationName: 'LedgerCare Demo Charity',
-      registrationNumber: 'LC-DEMO-001',
-      email: 'demo@ledgercare.org',
-      verified: true,
-      verificationStatus: 'VERIFIED',
-      campaignEligibility: 'ALLOWED',
-      hash: '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
-    };
+    return null;
   });
 
   useEffect(() => {
@@ -50,36 +46,12 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('lc_charity_profile', JSON.stringify(charityProfile));
-  }, [charityProfile]);
-
-  // Try to load verified charity from backend on mount if none saved yet
-  useEffect(() => {
-    async function loadCharity() {
-      try {
-        const saved = localStorage.getItem('lc_charity_profile');
-        if (saved) return;
-
-        const res = await api.getCharities();
-        if (res.success && res.charities && res.charities.length > 0) {
-          const first = res.charities[0];
-          setCharityProfile({
-            id: first.charityId || 1,
-            organizationName: first.organizationName || 'LedgerCare Demo Charity',
-            registrationNumber: first.registrationNumber || 'LC-DEMO-001',
-            email: first.email || 'demo@ledgercare.org',
-            verified: Boolean(first.verified),
-            verificationStatus: first.verified ? 'VERIFIED' : 'PENDING_VERIFICATION',
-            campaignEligibility: first.verified ? 'ALLOWED' : 'BLOCKED',
-            hash: first.credHash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
-          });
-        }
-      } catch (err) {
-        console.warn('Could not fetch backend charity on startup:', err);
-      }
+    if (charityProfile) {
+      localStorage.setItem('lc_charity_profile', JSON.stringify(charityProfile));
+    } else {
+      localStorage.removeItem('lc_charity_profile');
     }
-    loadCharity();
-  }, []);
+  }, [charityProfile]);
 
   const switchRole = (newRole) => {
     setRole(newRole);

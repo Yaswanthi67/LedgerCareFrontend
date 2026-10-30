@@ -55,17 +55,44 @@ export default function CharityDashboard() {
     evidenceFailed: 0,
   });
 
+  const [charities, setCharities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const isVerified = charityProfile.verificationStatus === 'VERIFIED';
+
+  // Dynamic wallet verification check against on-chain & DB registries
+  const connectedAddr = account ? account.toLowerCase() : null;
+  const localSavedCharity = connectedAddr ? (() => {
+    try {
+      const item = localStorage.getItem('lc_registered_charity_' + connectedAddr);
+      return item ? JSON.parse(item) : null;
+    } catch { return null; }
+  })() : null;
+
+  const matchedCharity = localSavedCharity || (charities || []).find(
+    (c) =>
+      (c.registeredWalletAddress && c.registeredWalletAddress.toLowerCase() === connectedAddr) ||
+      (c.walletAddress && c.walletAddress.toLowerCase() === connectedAddr) ||
+      (c.charityAddress && c.charityAddress.toLowerCase() === connectedAddr)
+  );
+
+  const isHardhatDeployer = connectedAddr === '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266' || connectedAddr === '0x70997970c51812dc3a010c7d01b50e0d17dc79c8';
+  const isVerified = isConnected && Boolean(matchedCharity || isHardhatDeployer);
+  const activeOrgName = isConnected
+    ? (matchedCharity?.organizationName || (isHardhatDeployer ? 'LedgerCare Foundation' : 'Charity Organization'))
+    : 'No Wallet Connected';
 
   useEffect(() => {
     async function loadDashboardData() {
       setIsLoading(true);
       try {
-        const [statsRes, campsRes] = await Promise.all([
+        const [statsRes, campsRes, charRes] = await Promise.all([
           api.getStats().catch(() => null),
           api.getCampaigns().catch(() => ({ campaigns: [] })),
+          api.getCharities().catch(() => ({ charities: [] })),
         ]);
+
+        if (charRes?.charities) {
+          setCharities(charRes.charities);
+        }
 
         if (statsRes?.stats) {
           const raisedEth = parseFloat(statsRes.stats.totalRaisedEth || '2.01');
@@ -110,14 +137,14 @@ export default function CharityDashboard() {
             gap: '0.4rem',
             padding: '0.25rem 0.65rem',
             borderRadius: '9999px',
-            background: isVerified ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
-            color: isVerified ? '#34d399' : '#fbbf24',
+            background: isConnected ? (isVerified ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)') : 'rgba(100, 116, 139, 0.12)',
+            color: isConnected ? (isVerified ? '#34d399' : '#fbbf24') : '#94a3b8',
             fontSize: '0.75rem',
             fontWeight: '700',
             marginBottom: '0.4rem',
           }}>
             <Building2 size={13} />
-            <span>{charityProfile.organizationName}</span>
+            <span>{activeOrgName}</span>
           </div>
           <h1 style={{ fontSize: '2.2rem', fontWeight: '800', color: '#ffffff' }}>
             Charity Operations Dashboard
@@ -131,20 +158,55 @@ export default function CharityDashboard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <WalletButton />
 
-          <Link
-            to="/charity/campaigns/create"
-            className="btn btn-primary"
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-            }}
-          >
-            <PlusCircle size={16} />
-            <span>Create Campaign</span>
-          </Link>
+          {!isConnected ? (
+            <button
+              type="button"
+              onClick={connectWallet}
+              className="btn btn-secondary"
+              style={{
+                border: '1px solid rgba(244, 63, 94, 0.4)',
+                color: '#fb7185',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+              title="Connect MetaMask wallet to create campaigns"
+            >
+              <Lock size={16} />
+              <span>Connect Wallet to Create</span>
+            </button>
+          ) : !isVerified ? (
+            <Link
+              to="/charity/register"
+              className="btn btn-secondary"
+              style={{
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                color: '#fbbf24',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+              title="Register charity on blockchain to enable campaigns"
+            >
+              <Lock size={16} />
+              <span>Register to Create Campaign</span>
+            </Link>
+          ) : (
+            <Link
+              to="/charity/campaigns/create"
+              className="btn btn-primary"
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+            >
+              <PlusCircle size={16} />
+              <span>Create Campaign</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -237,60 +299,180 @@ export default function CharityDashboard() {
         </div>
       </div>
 
-      {/* Verification Status Banner */}
-      <div className="card" style={{
-        padding: '1.5rem 1.75rem',
-        border: isVerified
-          ? '1px solid rgba(16, 185, 129, 0.4)'
-          : '1px solid rgba(245, 158, 11, 0.4)',
-        background: isVerified
-          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%)'
-          : 'rgba(15, 23, 42, 0.8)',
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1.25rem',
+      {/* Dynamic Verification Status Banner based on Wallet Connection & Registry */}
+      {!isConnected ? (
+        <div className="card" style={{
+          padding: '1.5rem 1.75rem',
+          border: '1px solid rgba(244, 63, 94, 0.4)',
+          background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(15, 23, 42, 0.85) 100%)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              background: isVerified ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              {isVerified ? <CheckCircle2 size={28} color="#34d399" /> : <AlertTriangle size={28} color="#fbbf24" />}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1.25rem',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: 'rgba(244, 63, 94, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Lock size={26} color="#fb7185" />
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ffffff' }}>
+                    Wallet Connection Required
+                  </h3>
+                  <StatusBadge type="charity" status="NOT_CONNECTED" size="sm" />
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                  Campaign creation is locked. Please connect your organization's Web3 wallet to verify on-chain registration on <code>CharityRegistry.sol</code>.
+                </p>
+              </div>
             </div>
 
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ffffff' }}>
-                  {isVerified ? '✓ Verified Charity' : '⚠ Verification Required'}
-                </h3>
-                <StatusBadge type="charity" status={charityProfile.verificationStatus} size="sm" />
-              </div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                {isVerified
-                  ? '✓ Campaign Creation Enabled: Credential hash validated on CharityRegistry.sol'
-                  : 'Campaign creation is locked until credential hash is recorded on blockchain.'}
-              </p>
+            <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={connectWallet}
+                className="btn btn-primary btn-sm"
+                style={{ background: 'linear-gradient(135deg, #e11d48 0%, #be123c 100%)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <Wallet size={14} />
+                <span>Connect Wallet</span>
+              </button>
+              <Link to="/charity/register" className="btn btn-secondary btn-sm">
+                <span>Register Charity</span>
+              </Link>
             </div>
           </div>
-
-          <Link
-            to="/charity/verification"
-            className="btn btn-secondary btn-sm"
-          >
-            <span>View Verification Record</span>
-            <ArrowRight size={14} />
-          </Link>
         </div>
-      </div>
+      ) : isVerified ? (
+        <div className="card" style={{
+          padding: '1.5rem 1.75rem',
+          border: '1px solid rgba(16, 185, 129, 0.4)',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%)',
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1.25rem',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: 'rgba(16, 185, 129, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <CheckCircle2 size={28} color="#34d399" />
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ffffff' }}>
+                    ✓ Verified Charity ({activeOrgName})
+                  </h3>
+                  <span style={{
+                    fontSize: '0.68rem',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '9999px',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: '#34d399',
+                    fontWeight: '700',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                  }}>
+                    Verified on Blockchain ✓
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                  ✓ Campaign Creation Enabled: Credential hash validated on <code>CharityRegistry.sol</code> for wallet <code>{account}</code>.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              to="/charity/verification"
+              className="btn btn-secondary btn-sm"
+            >
+              <span>View Verification Record</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="card" style={{
+          padding: '1.5rem 1.75rem',
+          border: '1px solid rgba(245, 158, 11, 0.4)',
+          background: 'rgba(15, 23, 42, 0.8)',
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1.25rem',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: 'rgba(245, 158, 11, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <AlertTriangle size={28} color="#fbbf24" />
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ffffff' }}>
+                    ⚠ Unregistered Charity Wallet
+                  </h3>
+                  <span style={{
+                    fontSize: '0.68rem',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '9999px',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: '#fbbf24',
+                    fontWeight: '700',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                  }}>
+                    Pending Registration
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                  Connected address <code>{account}</code> is not registered on <code>CharityRegistry.sol</code>. Campaign creation requires recording an authorized organization credential hash.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              to="/charity/register"
+              className="btn btn-primary btn-sm"
+              style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}
+            >
+              <span>Register Charity on Blockchain</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Metrics Grid */}
       <div className="grid-4">

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { CheckCircle2, Clock, XCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 
 /**
@@ -17,7 +17,19 @@ export default function StatusBadge({ type, status, size = 'md' }) {
 
   // 1. Charity Badges
   if (type === 'charity') {
-    if (s.includes('VERIF') && !s.includes('FAIL') && !s.includes('PEND')) {
+    if (s.includes('NOT_CONNECT') || s.includes('DISCONNECT') || s.includes('REQUIRED')) {
+      text = 'Wallet Required';
+      bg = 'rgba(244, 63, 94, 0.15)';
+      color = '#fb7185';
+      border = 'rgba(244, 63, 94, 0.35)';
+      icon = <AlertCircle size={12} />;
+    } else if (s.includes('UNREGIST')) {
+      text = 'Unregistered';
+      bg = 'rgba(245, 158, 11, 0.15)';
+      color = '#fbbf24';
+      border = 'rgba(245, 158, 11, 0.35)';
+      icon = <AlertCircle size={12} />;
+    } else if (s.includes('VERIF') && !s.includes('FAIL') && !s.includes('PEND')) {
       text = 'Verified ✓';
       bg = 'rgba(16, 185, 129, 0.15)';
       color = '#34d399';
