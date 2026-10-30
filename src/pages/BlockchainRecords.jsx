@@ -29,18 +29,33 @@ export default function BlockchainRecords() {
   const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
-    async function loadRecords() {
-      setIsLoading(true);
+    async function loadRecords(silent = false) {
+      if (!silent) setIsLoading(true);
       try {
         const res = await api.getBlockchainRecords();
         setRecords(res.records || []);
       } catch (err) {
-        console.warn('Error loading audit ledger records:', err);
+        console.warn('Error loading blockchain records:', err);
       } finally {
-        setIsLoading(false);
+        if (!silent) setIsLoading(false);
       }
     }
     loadRecords();
+
+    // Auto-refresh when user switches tabs or window gains focus
+    const onFocus = () => loadRecords(true);
+    const onStorage = (e) => {
+      if (e.key === 'ledgercare_blockchain_records') loadRecords(true);
+    };
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('storage', onStorage);
+    const interval = setInterval(() => loadRecords(true), 4000);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('storage', onStorage);
+      clearInterval(interval);
+    };
   }, []);
 
   const copyHash = (hash, id) => {
@@ -83,10 +98,10 @@ export default function BlockchainRecords() {
           marginBottom: '0.4rem',
         }}>
           <ShieldCheck size={13} />
-          <span>Tamper-Evident Public Ledger</span>
+          <span>Live Blockchain Ledger</span>
         </div>
         <h1 style={{ fontSize: '2.2rem', fontWeight: '800', color: '#ffffff' }}>
-          Public Audit Ledger
+          Blockchain
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem' }}>
           Real-time, permanent audit records verifying every charity registration, campaign, donor contribution, and expenditure proof across LedgerCare.

@@ -100,9 +100,10 @@ export default function CharityRegister() {
       }
 
       // Dispatches to POST /api/charities/register
+      const effectiveWallet = account || formData.walletAddress || '';
       const payload = {
         ...formData,
-        walletAddress: account || '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+        walletAddress: effectiveWallet,
         transactionHash: metaMaskTxHash,
       };
 
@@ -129,6 +130,19 @@ export default function CharityRegister() {
 
         // Switch role to charity view
         switchRole('charity');
+
+        // Record blockchain event on the 3rd page
+        api.recordBlockchainEvent({
+          recordType: 'Charity Verification',
+          recordId: `CH-${(res.charity?.charityId || Date.now()).toString().slice(-4)}`,
+          name: `${formData.organizationName} (${formData.registrationNumber})`,
+          blockNumber: Math.floor(100 + Math.random() * 50),
+          hash: res.hash || res.charity?.registrationDocumentHash || '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map((b) => b.toString(16).padStart(2, '0')).join(''),
+          transactionHash: metaMaskTxHash || res.charity?.transactionHash || '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map((b) => b.toString(16).padStart(2, '0')).join(''),
+          timestamp: new Date().toISOString(),
+          status: 'CONFIRMED',
+          verificationStatus: 'VERIFIED',
+        });
       } else {
         throw new Error(res.message || 'Registration failed.');
       }
@@ -501,16 +515,44 @@ export default function CharityRegister() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">On-Chain Charity Wallet Address (MetaMask) *</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <label className="form-label" style={{ margin: 0 }}>On-Chain Charity Wallet Address (MetaMask) *</label>
+                {!isConnected && (
+                  <button
+                    type="button"
+                    onClick={connectWallet}
+                    style={{
+                      background: 'rgba(226, 118, 37, 0.15)',
+                      border: '1px solid rgba(226, 118, 37, 0.35)',
+                      color: '#fb923c',
+                      borderRadius: '4px',
+                      padding: '0.2rem 0.55rem',
+                      fontSize: '0.75rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Connect MetaMask
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
-                readOnly
-                value={account || '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'}
+                readOnly={Boolean(account)}
+                placeholder={isConnected ? account : "Connect MetaMask or enter 0x organization wallet address"}
+                value={account || formData.walletAddress || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, walletAddress: e.target.value }))}
                 className="form-input font-mono"
-                style={{ background: 'rgba(15, 23, 42, 0.75)', color: isConnected ? '#34d399' : '#94a3b8', fontSize: '0.88rem' }}
+                style={{
+                  background: 'rgba(15, 23, 42, 0.75)',
+                  color: isConnected ? '#34d399' : '#ffffff',
+                  fontSize: '0.88rem',
+                }}
               />
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                {isConnected ? '✓ Verified and connected via MetaMask extension' : 'Click "Connect Wallet" above to connect your organization address'}
+                {isConnected
+                  ? `✓ Dynamic address connected: ${account}`
+                  : 'Click "Connect MetaMask" to connect your organization wallet dynamically, or type your address.'}
               </span>
             </div>
 

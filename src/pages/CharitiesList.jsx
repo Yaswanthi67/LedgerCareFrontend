@@ -37,11 +37,14 @@ export default function CharitiesList() {
     loadCharities();
   }, []);
 
-  const filtered = charities.filter((c) =>
-    c.organizationName.toLowerCase().includes(search.toLowerCase()) ||
-    c.registrationNumber.toLowerCase().includes(search.toLowerCase()) ||
-    c.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = charities.filter((c) => {
+    if (!c) return false;
+    const org = (c.organizationName || c.name || '').toLowerCase();
+    const reg = (c.registrationNumber || c.registrationDetails || '').toLowerCase();
+    const em = (c.email || '').toLowerCase();
+    const s = (search || '').toLowerCase();
+    return !s || org.includes(s) || reg.includes(s) || em.includes(s);
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>

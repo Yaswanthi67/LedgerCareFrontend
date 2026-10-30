@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useWallet } from '../context/WalletContext';
 import { api } from '../services/api';
 import { formatInr, ethToInr } from '../utils/formatters';
 import StatusBadge from '../components/StatusBadge';
@@ -20,10 +21,22 @@ import {
   AlertTriangle,
   CheckCircle2,
   Wallet,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 export default function CharityDashboard() {
   const { charityProfile, isCharity, switchRole } = useAuth();
+  const { account, isConnected } = useWallet();
+  const [copied, setCopied] = useState(false);
+
+  const copyAddress = () => {
+    if (account) {
+      navigator.clipboard.writeText(account);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   useEffect(() => {
     if (!isCharity && switchRole) {
@@ -138,8 +151,10 @@ export default function CharityDashboard() {
       {/* Charity MetaMask Wallet Status Card */}
       <div className="card" style={{
         padding: '1.25rem 1.5rem',
-        border: '1px solid rgba(59, 130, 246, 0.35)',
-        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%)',
+        border: isConnected ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid rgba(226, 118, 37, 0.35)',
+        background: isConnected
+          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%)'
+          : 'linear-gradient(135deg, rgba(226, 118, 37, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -151,14 +166,14 @@ export default function CharityDashboard() {
             width: '44px',
             height: '44px',
             borderRadius: '12px',
-            background: 'rgba(226, 118, 37, 0.15)',
-            border: '1px solid rgba(226, 118, 37, 0.35)',
+            background: isConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(226, 118, 37, 0.15)',
+            border: isConnected ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid rgba(226, 118, 37, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
           }}>
-            <Wallet size={22} color="#fb923c" />
+            <Wallet size={22} color={isConnected ? '#34d399' : '#fb923c'} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
@@ -169,17 +184,51 @@ export default function CharityDashboard() {
                 fontSize: '0.68rem',
                 padding: '0.15rem 0.5rem',
                 borderRadius: '9999px',
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: '#34d399',
+                background: isConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                color: isConnected ? '#34d399' : '#fbbf24',
                 fontWeight: '700',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
+                border: isConnected ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
               }}>
-                MetaMask On-Chain Signer
+                {isConnected ? '✓ MetaMask Connected' : 'Not Connected'}
               </span>
             </div>
-            <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: 0 }}>
-              Connect your authorized organization wallet to approve campaigns, sign evidence records, and anchor expenditures on-chain.
-            </p>
+
+            {isConnected && account ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.25rem', marginBottom: '0.25rem' }}>
+                  <span className="font-mono" style={{ fontSize: '0.88rem', color: '#34d399', fontWeight: '700' }}>
+                    {account}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copyAddress}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: 'none',
+                      color: copied ? '#34d399' : '#94a3b8',
+                      cursor: 'pointer',
+                      borderRadius: '4px',
+                      padding: '0.2rem 0.4rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      fontSize: '0.72rem',
+                    }}
+                    title="Copy full wallet address"
+                  >
+                    {copied ? <Check size={12} /> : <Copy size={12} />}
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
+                  Active on-chain signer. Campaigns and evidence uploads will be attributed to this address.
+                </p>
+              </div>
+            ) : (
+              <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: 0 }}>
+                Click <strong>Connect Wallet</strong> to connect your organization's MetaMask address dynamically.
+              </p>
+            )}
           </div>
         </div>
 

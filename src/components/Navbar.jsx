@@ -31,10 +31,9 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: 'Browse Active Causes', path: '/campaigns' },
-    { name: '1. Donor Hub', path: '/donor' },
-    { name: '2. Charity Portal', path: '/charity' },
-    { name: '3. Public Audit Ledger', path: '/transparency/blockchain' },
+    { name: '1. Donor', path: '/donor' },
+    { name: '2. Charity', path: '/charity' },
+    { name: '3. Blockchain', path: '/transparency/blockchain' },
     { name: '4. Transparency & Tracking', path: '/verify' },
   ];
 

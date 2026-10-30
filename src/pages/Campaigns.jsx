@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import CampaignCard from '../components/CampaignCard';
 import DonationModal from '../components/DonationModal';
@@ -31,15 +31,24 @@ export default function Campaigns() {
   }, []);
 
   const filteredCampaigns = campaigns.filter((camp) => {
+    if (!camp) return false;
+    const title = (camp.title || camp.campaignTitle || '').toLowerCase();
+    const desc = (camp.description || '').toLowerCase();
+    const charity = (camp.charityName || '').toLowerCase();
+    const category = (camp.category || '').toLowerCase();
+    const query = (searchQuery || '').toLowerCase();
+    const catQuery = (selectedCategory || '').toLowerCase();
+
     const matchesCategory =
       selectedCategory === 'All Categories' ||
-      (camp.category && camp.category.toLowerCase().includes(selectedCategory.toLowerCase())) ||
-      (camp.title && camp.title.toLowerCase().includes(selectedCategory.toLowerCase()));
+      category.includes(catQuery) ||
+      title.includes(catQuery);
 
     const matchesSearch =
-      camp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      camp.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (camp.charityName && camp.charityName.toLowerCase().includes(searchQuery.toLowerCase()));
+      !query ||
+      title.includes(query) ||
+      desc.includes(query) ||
+      charity.includes(query);
 
     return matchesCategory && matchesSearch;
   });

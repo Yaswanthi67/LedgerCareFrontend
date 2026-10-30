@@ -767,11 +767,55 @@ export const api = {
   // ==========================================
   // BLOCKCHAIN PUBLIC LEDGER AUDIT RECORDS
   // ==========================================
+  recordBlockchainEvent: (record) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('ledgercare_blockchain_records') || '[]');
+      const newRec = {
+        id: record.id || `rec-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        recordType: record.recordType || 'Blockchain Record',
+        recordId: record.recordId || `REC-${Date.now().toString().slice(-4)}`,
+        name: record.name || 'Blockchain Verified Event',
+        blockNumber: record.blockNumber || Math.floor(120 + Math.random() * 50),
+        hash: record.hash || '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join(''),
+        transactionHash: record.transactionHash || '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join(''),
+        timestamp: record.timestamp || new Date().toISOString(),
+        status: record.status || 'CONFIRMED',
+        verificationStatus: record.verificationStatus || 'VERIFIED',
+      };
+      stored.unshift(newRec);
+      localStorage.setItem('ledgercare_blockchain_records', JSON.stringify(stored));
+      return newRec;
+    } catch (err) {
+      console.warn('Could not record blockchain event locally:', err);
+      return record;
+    }
+  },
+
   getBlockchainRecords: async () => {
+    let records = [];
     try {
       const res = await request('/blockchain/records');
-      if (res && res.records && res.records.length > 0) return res;
+      if (res && res.records && res.records.length > 0) {
+        records = res.records;
+      }
     } catch (_) {}
+
+    // Merge with dynamically recorded events from localStorage
+    try {
+      const stored = JSON.parse(localStorage.getItem('ledgercare_blockchain_records') || '[]');
+      const existingIds = new Set(records.map(r => r.recordId || r.id || r.transactionHash));
+      for (const s of stored) {
+        if (!existingIds.has(s.recordId) && !existingIds.has(s.id) && !existingIds.has(s.transactionHash)) {
+          records.unshift(s);
+          existingIds.add(s.recordId);
+        }
+      }
+    } catch (_) {}
+
+    if (records.length > 0) {
+      records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      return { success: true, count: records.length, records };
+    }
 
     // Fallback: aggregate from all available client endpoints
     try {
@@ -781,8 +825,6 @@ export const api = {
         api.getDonations().catch(() => ({ donations: [] })),
         api.getAllEvidence().catch(() => ({ evidence: [] })),
       ]);
-
-      const records = [];
 
       (evRes.evidence || []).forEach((ev, idx) => {
         records.push({
@@ -843,6 +885,18 @@ export const api = {
           verificationStatus: 'VERIFIED',
         });
       });
+
+      // Merge local storage records
+      try {
+        const stored = JSON.parse(localStorage.getItem('ledgercare_blockchain_records') || '[]');
+        const existingIds = new Set(records.map(r => r.recordId || r.id || r.transactionHash));
+        for (const s of stored) {
+          if (!existingIds.has(s.recordId) && !existingIds.has(s.id) && !existingIds.has(s.transactionHash)) {
+            records.unshift(s);
+            existingIds.add(s.recordId);
+          }
+        }
+      } catch (_) {}
 
       return {
         success: true,

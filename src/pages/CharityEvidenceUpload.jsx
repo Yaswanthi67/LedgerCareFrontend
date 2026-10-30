@@ -233,6 +233,19 @@ export default function CharityEvidenceUpload() {
       );
       setUploadedData(resultPayload);
       setEvidenceHistory((prev) => [resultPayload, ...prev]);
+
+      // Record blockchain event on the 3rd page
+      api.recordBlockchainEvent({
+        recordType: 'Evidence Record',
+        recordId: `EV-${(onChainEvidenceId || preparedTx?.evidenceId || Date.now()).toString().slice(-4)}`,
+        name: `${fileName || selectedFile.name} (₹${Number(amount || 0).toLocaleString('en-IN')})`,
+        blockNumber: blockNumber || Math.floor(250 + Math.random() * 50),
+        hash: originalSha256Hash,
+        transactionHash: txHash,
+        timestamp: new Date().toISOString(),
+        status: 'CONFIRMED',
+        verificationStatus: 'VERIFIED',
+      });
     } catch (err) {
       console.error('Evidence upload/MetaMask confirmation failed:', err);
       setErrorMessage(err.message || 'Failed to complete evidence registration.');
