@@ -77,6 +77,11 @@ export default function CreateCampaign() {
       switchRole('charity');
     }
 
+    if (!isConnected || !account) {
+      setErrorMessage('A connected charity wallet is required to create on-chain campaigns. Please connect your MetaMask wallet.');
+      return;
+    }
+
     if (!formData.title.trim() || formData.targetAmount <= 0) {
       setErrorMessage('Please fill in valid campaign details.');
       return;
@@ -363,18 +368,37 @@ export default function CreateCampaign() {
           )}
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="btn btn-primary btn-lg"
-            style={{
-              marginTop: '0.5rem',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            }}
-          >
-            <Sparkles size={18} />
-            <span>{isSubmitting ? 'Registering on Blockchain...' : 'Launch Campaign on Blockchain'}</span>
-          </button>
+          {!isConnected ? (
+            <button
+              type="button"
+              onClick={connectWallet}
+              className="btn btn-primary btn-lg"
+              style={{
+                marginTop: '0.5rem',
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+              }}
+            >
+              <Wallet size={18} />
+              <span>Connect MetaMask Wallet to Launch</span>
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn btn-primary btn-lg"
+              style={{
+                marginTop: '0.5rem',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              }}
+            >
+              <Sparkles size={18} />
+              <span>{isSubmitting ? 'Registering on Blockchain...' : 'Launch Campaign on Blockchain'}</span>
+            </button>
+          )}
         </form>
       </div>
     </div>

@@ -21,6 +21,7 @@ import {
   Clock,
   History,
   RefreshCw,
+  Power,
 } from 'lucide-react';
 
 export default function CharityEvidenceUpload() {
@@ -32,6 +33,7 @@ export default function CharityEvidenceUpload() {
     isConnected,
     isCorrectNetwork,
     connectWallet,
+    disconnectWallet,
     switchNetwork,
     getContract,
   } = useWallet();
@@ -299,8 +301,46 @@ export default function CharityEvidenceUpload() {
         </p>
 
         {/* Charity Wallet Signer */}
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <WalletButton />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.65rem' }}>
+          {isConnected && account ? (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              background: 'rgba(15, 23, 42, 0.85)',
+              border: '1px solid rgba(16, 185, 129, 0.35)',
+              borderRadius: '9999px',
+              padding: '0.35rem 0.85rem',
+            }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+              <span className="font-mono" style={{ fontSize: '0.82rem', color: '#34d399', fontWeight: '700' }}>
+                {account.substring(0, 6)}...{account.substring(account.length - 4)}
+              </span>
+              <button
+                type="button"
+                onClick={disconnectWallet}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
+                  color: '#f87171',
+                  borderRadius: '9999px',
+                  padding: '0.2rem 0.55rem',
+                  fontSize: '0.72rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                }}
+                title="Disconnect Wallet"
+              >
+                <Power size={11} color="#f87171" />
+                <span>Disconnect</span>
+              </button>
+            </div>
+          ) : (
+            <WalletButton />
+          )}
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -66,7 +66,7 @@ export default function CharityCampaigns() {
             marginBottom: '0.4rem',
           }}>
             <Building2 size={13} />
-            <span>{charityProfile.organizationName} Management</span>
+            <span>{charityProfile?.organizationName || 'Charity'} Management</span>
           </div>
           <h1 style={{ fontSize: '2.2rem', fontWeight: '800', color: '#ffffff' }}>
             Charity Campaigns

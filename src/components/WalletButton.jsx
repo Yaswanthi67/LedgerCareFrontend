@@ -169,7 +169,7 @@ export default function WalletButton() {
 
   // When wallet is connected: show shortened address & account manager dropdown
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', zIndex: 1000 }}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
         style={{
@@ -207,14 +207,14 @@ export default function WalletButton() {
           style={{
             position: 'absolute',
             right: 0,
-            marginTop: '0.5rem',
-            width: '280px',
-            background: '#0f172a',
-            border: '1px solid var(--border-subtle)',
+            top: 'calc(100% + 6px)',
+            width: '290px',
+            background: '#090d16',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
             borderRadius: '12px',
             padding: '1rem',
-            boxShadow: '0 12px 30px rgba(0,0,0,0.65)',
-            zIndex: 60,
+            boxShadow: '0 20px 45px rgba(0,0,0,0.85)',
+            zIndex: 99999,
           }}
         >
           {/* Header */}
@@ -331,22 +331,22 @@ export default function WalletButton() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: '0.5rem',
                 width: '100%',
-                padding: '0.45rem 0.65rem',
-                background: 'transparent',
-                border: 'none',
-                color: '#ef4444',
-                fontSize: '0.78rem',
-                borderRadius: '6px',
+                padding: '0.5rem 0.75rem',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                color: '#f87171',
+                fontSize: '0.82rem',
+                fontWeight: '700',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                transition: 'background 0.2s',
-                textAlign: 'left',
+                transition: 'all 0.2s',
+                marginTop: '0.35rem',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <Power size={14} />
+              <Power size={14} color="#f87171" />
               <span>Disconnect Wallet</span>
             </button>
           </div>

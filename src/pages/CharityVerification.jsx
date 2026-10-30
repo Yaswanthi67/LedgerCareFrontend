@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -19,7 +19,18 @@ import {
 
 export default function CharityVerification() {
   const { charityProfile, updateCharityStatus } = useAuth();
-  const [profile, setProfile] = useState(charityProfile);
+  const [profile, setProfile] = useState(
+    charityProfile || {
+      id: 1,
+      organizationName: 'Charity Organization',
+      registrationNumber: 'LC-REG',
+      email: '',
+      verified: false,
+      verificationStatus: 'PENDING_VERIFICATION',
+      campaignEligibility: 'BLOCKED',
+      hash: '0x' + '0'.repeat(64),
+    }
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -27,14 +38,15 @@ export default function CharityVerification() {
     async function loadVerification() {
       setIsLoading(true);
       try {
-        const res = await api.getCharityVerification(profile.id || 1);
+        const charityId = profile?.id || 1;
+        const res = await api.getCharityVerification(charityId);
         if (res.success) {
           setProfile((prev) => ({
             ...prev,
             ...res.charity,
-            verificationStatus: res.verificationStatus || prev.verificationStatus,
-            campaignEligibility: res.campaignEligibility || prev.campaignEligibility,
-            hash: res.hash || prev.hash,
+            verificationStatus: res.verificationStatus || prev?.verificationStatus,
+            campaignEligibility: res.campaignEligibility || prev?.campaignEligibility,
+            hash: res.hash || prev?.hash,
           }));
         }
       } catch (err) {
@@ -44,11 +56,11 @@ export default function CharityVerification() {
       }
     }
     loadVerification();
-  }, [profile.id]);
+  }, [profile?.id]);
 
-  const isVerified = profile.verificationStatus === 'VERIFIED';
-  const isPending = profile.verificationStatus === 'PENDING_VERIFICATION';
-  const isFailed = profile.verificationStatus === 'VERIFICATION_FAILED';
+  const isVerified = profile?.verificationStatus === 'VERIFIED';
+  const isPending = profile?.verificationStatus === 'PENDING_VERIFICATION';
+  const isFailed = profile?.verificationStatus === 'VERIFICATION_FAILED';
 
   const copyHash = () => {
     navigator.clipboard.writeText(profile.hash || '');

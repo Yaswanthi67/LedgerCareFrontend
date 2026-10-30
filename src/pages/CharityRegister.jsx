@@ -64,6 +64,11 @@ export default function CharityRegister() {
       switchRole('charity');
     }
 
+    if (!isConnected || !account) {
+      setErrorMessage('MetaMask wallet connection is required to register a charity. Please connect your organization wallet first.');
+      return;
+    }
+
     if (!formData.organizationName || !formData.registrationNumber || !formData.email) {
       setErrorMessage('Please complete all mandatory registration fields.');
       return;
@@ -115,18 +120,25 @@ export default function CharityRegister() {
           transactionHash: metaMaskTxHash || res.charity?.transactionHash,
         });
 
-        // Update local auth context charity profile with registered ID
-        setCharityProfile({
+        const savedCharity = {
           id: res.charity?.charityId || Math.floor(Math.random() * 800) + 10,
           organizationName: formData.organizationName,
           registrationNumber: formData.registrationNumber,
           email: formData.email,
           walletAddress: payload.walletAddress,
-          verified: res.verificationStatus === 'VERIFIED',
+          verified: true,
           verificationStatus: res.verificationStatus || 'VERIFIED',
           campaignEligibility: res.campaignEligibility || 'ALLOWED',
           hash: res.hash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
-        });
+        };
+
+        // Update local auth context charity profile with registered ID
+        setCharityProfile(savedCharity);
+        if (payload.walletAddress) {
+          try {
+            localStorage.setItem('lc_registered_charity_' + payload.walletAddress.toLowerCase(), JSON.stringify(savedCharity));
+          } catch (_) {}
+        }
 
         // Switch role to charity view
         switchRole('charity');
@@ -602,18 +614,37 @@ export default function CharityRegister() {
             )}
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn btn-primary btn-lg"
-              style={{
-                marginTop: '0.5rem',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              }}
-            >
-              <ShieldCheck size={18} />
-              <span>{isSubmitting ? 'Verifying & Registering on Blockchain...' : 'Register Organization on Blockchain'}</span>
-            </button>
+            {!isConnected ? (
+              <button
+                type="button"
+                onClick={connectWallet}
+                className="btn btn-primary btn-lg"
+                style={{
+                  marginTop: '0.5rem',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                <Wallet size={18} />
+                <span>Connect MetaMask Wallet to Register</span>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn btn-primary btn-lg"
+                style={{
+                  marginTop: '0.5rem',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                }}
+              >
+                <ShieldCheck size={18} />
+                <span>{isSubmitting ? 'Verifying & Registering on Blockchain...' : 'Register Organization on Blockchain'}</span>
+              </button>
+            )}
           </form>
         </div>
       )}

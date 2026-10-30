@@ -23,11 +23,12 @@ import {
   Wallet,
   Copy,
   Check,
+  Power,
 } from 'lucide-react';
 
 export default function CharityDashboard() {
   const { charityProfile, isCharity, switchRole } = useAuth();
-  const { account, isConnected } = useWallet();
+  const { account, isConnected, disconnectWallet } = useWallet();
   const [copied, setCopied] = useState(false);
 
   const copyAddress = () => {
@@ -294,8 +295,33 @@ export default function CharityDashboard() {
           </div>
         </div>
 
-        <div>
-          <WalletButton />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          {isConnected ? (
+            <button
+              type="button"
+              onClick={disconnectWallet}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                color: '#f87171',
+                fontSize: '0.82rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              title="Disconnect your MetaMask wallet address"
+            >
+              <Power size={14} color="#f87171" />
+              <span>Disconnect Wallet</span>
+            </button>
+          ) : (
+            <WalletButton />
+          )}
         </div>
       </div>
 
@@ -303,7 +329,7 @@ export default function CharityDashboard() {
       {!isConnected ? (
         <div className="card" style={{
           padding: '1.5rem 1.75rem',
-          border: '1px solid rgba(244, 63, 94, 0.4)',
+          border: '1px solid rgba(244, 63, 94, 0.35)',
           background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(15, 23, 42, 0.85) 100%)',
         }}>
           <div style={{
@@ -329,12 +355,12 @@ export default function CharityDashboard() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
                   <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ffffff' }}>
-                    Wallet Connection Required
+                    Connect Wallet or Register Charity
                   </h3>
                   <StatusBadge type="charity" status="NOT_CONNECTED" size="sm" />
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-                  Campaign creation is locked. Please connect your organization's Web3 wallet to verify on-chain registration on <code>CharityRegistry.sol</code>.
+                  To launch fundraising campaigns and anchor expenditure proofs, connect your organization's Web3 wallet or register your charity.
                 </p>
               </div>
             </div>
@@ -350,7 +376,7 @@ export default function CharityDashboard() {
                 <span>Connect Wallet</span>
               </button>
               <Link to="/charity/register" className="btn btn-secondary btn-sm">
-                <span>Register Charity</span>
+                <span>Register Charity Organization</span>
               </Link>
             </div>
           </div>
@@ -384,7 +410,7 @@ export default function CharityDashboard() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
                   <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ffffff' }}>
-                    ✓ Verified Charity ({activeOrgName})
+                    ✓ Verified Organization ({activeOrgName})
                   </h3>
                   <span style={{
                     fontSize: '0.68rem',
@@ -399,17 +425,18 @@ export default function CharityDashboard() {
                   </span>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-                  ✓ Campaign Creation Enabled: Credential hash validated on <code>CharityRegistry.sol</code> for wallet <code>{account}</code>.
+                  ✓ Organization credentials and address <code>{account}</code> verified. Campaign creation and fund disbursement active.
                 </p>
               </div>
             </div>
 
             <Link
-              to="/charity/verification"
-              className="btn btn-secondary btn-sm"
+              to="/charity/campaigns/create"
+              className="btn btn-primary btn-sm"
+              style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
             >
-              <span>View Verification Record</span>
-              <ArrowRight size={14} />
+              <PlusCircle size={14} />
+              <span>Launch Campaign</span>
             </Link>
           </div>
         </div>
@@ -457,7 +484,7 @@ export default function CharityDashboard() {
                   </span>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-                  Connected address <code>{account}</code> is not registered on <code>CharityRegistry.sol</code>. Campaign creation requires recording an authorized organization credential hash.
+                  Connected address <code>{account}</code> is not yet registered. Complete organization registration to enable campaign creation.
                 </p>
               </div>
             </div>
