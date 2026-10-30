@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { formatInr, ethToInr } from '../utils/formatters';
 import CampaignCard from '../components/CampaignCard';
 import DonationModal from '../components/DonationModal';
@@ -24,6 +25,7 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
+  const { isDonor } = useAuth();
   const [stats, setStats] = useState({
     totalCampaigns: 1,
     activeCampaigns: 1,
@@ -177,17 +179,31 @@ export default function Home() {
             <ArrowRight size={18} />
           </Link>
 
-          <Link
-            to="/charity/register"
-            className="btn btn-secondary btn-lg"
-            style={{
-              background: 'rgba(255, 255, 255, 0.06)',
-              borderColor: 'rgba(255, 255, 255, 0.15)',
-            }}
-          >
-            <Building2 size={18} color="#38bdf8" />
-            <span>Register as Charity</span>
-          </Link>
+          {!isDonor ? (
+            <Link
+              to="/charity/register"
+              className="btn btn-secondary btn-lg"
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+              }}
+            >
+              <Building2 size={18} color="#38bdf8" />
+              <span>Register as Charity</span>
+            </Link>
+          ) : (
+            <Link
+              to="/donor"
+              className="btn btn-secondary btn-lg"
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+              }}
+            >
+              <Heart size={18} color="#60a5fa" />
+              <span>Donor Hub</span>
+            </Link>
+          )}
 
           <Link
             to="/transparency/blockchain"

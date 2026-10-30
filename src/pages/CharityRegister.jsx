@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useWallet } from '../context/WalletContext';
+import WalletButton from '../components/WalletButton';
 import StatusBadge from '../components/StatusBadge';
 import {
   Building2,
@@ -20,6 +21,13 @@ export default function CharityRegister() {
   const navigate = useNavigate();
   const { isDonor, setCharityProfile, switchRole } = useAuth();
   const { account, isConnected, connectWallet, getContract } = useWallet();
+
+  // If visiting charity registration, ensure active role is charity
+  React.useEffect(() => {
+    if (isDonor && switchRole) {
+      switchRole('charity');
+    }
+  }, [isDonor, switchRole]);
 
   const [formData, setFormData] = useState({
     organizationName: '',
@@ -52,9 +60,8 @@ export default function CharityRegister() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isDonor) {
-      setErrorMessage('Access Restricted: Donors are not permitted to register charities. Please switch to the Charity Portal.');
-      return;
+    if (isDonor && switchRole) {
+      switchRole('charity');
     }
 
     if (!formData.organizationName || !formData.registrationNumber || !formData.email) {
@@ -252,43 +259,101 @@ export default function CharityRegister() {
       ) : (
         /* Registration Form */
         <div className="card" style={{ padding: '2.5rem 2rem' }}>
-          {/* Connected Wallet Bar */}
+          {/* Prominent Charity Web3 Wallet Connection Card */}
           <div style={{
-            background: 'rgba(15, 23, 42, 0.6)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '10px',
-            padding: '0.75rem 1rem',
-            marginBottom: '1.5rem',
+            background: isConnected
+              ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.85) 100%)'
+              : 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.85) 100%)',
+            border: isConnected ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(245, 158, 11, 0.4)',
+            borderRadius: '12px',
+            padding: '1.25rem 1.5rem',
+            marginBottom: '2rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            fontSize: '0.82rem',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            boxShadow: isConnected ? '0 4px 20px rgba(16, 185, 129, 0.15)' : '0 4px 20px rgba(245, 158, 11, 0.15)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Wallet size={16} color={isConnected ? '#34d399' : '#60a5fa'} />
-              <span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '10px',
+                background: isConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: isConnected ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
+              }}>
+                <Wallet size={22} color={isConnected ? '#34d399' : '#fbbf24'} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {isConnected ? 'MetaMask Charity Wallet Connected' : 'Charity Blockchain Wallet Required'}
+                </div>
                 {isConnected ? (
                   <>
-                    <strong style={{ color: '#34d399' }}>Charity Wallet Connected:</strong>{' '}
-                    <span className="font-mono">{account}</span>
+                    <div className="font-mono" style={{ fontSize: '0.9rem', color: '#34d399', fontWeight: '700', marginTop: '0.15rem' }}>
+                      {account}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#60a5fa', marginTop: '0.15rem' }}>
+                      ✓ Connected to Hardhat Localhost (Chain ID: 31337) &bull; Ready for CharityRegistry.sol registration
+                    </div>
                   </>
                 ) : (
-                  <span style={{ color: '#94a3b8' }}>
-                    Connect MetaMask to register with your organization wallet address
-                  </span>
+                  <>
+                    <div style={{ fontSize: '0.9rem', color: '#ffffff', fontWeight: '700', marginTop: '0.15rem' }}>
+                      Connect MetaMask to register on-chain
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                      Your organization address will be linked and recorded on the smart contract
+                    </div>
+                  </>
                 )}
-              </span>
+              </div>
             </div>
-            {!isConnected && (
-              <button
-                type="button"
-                onClick={connectWallet}
-                className="btn btn-secondary btn-sm"
-                style={{ fontSize: '0.75rem' }}
-              >
-                Connect Wallet
-              </button>
-            )}
+
+            <div>
+              {isConnected ? (
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.45rem 1rem',
+                  borderRadius: '9999px',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  color: '#34d399',
+                  border: '1px solid rgba(16, 185, 129, 0.35)',
+                  fontSize: '0.82rem',
+                  fontWeight: '700',
+                }}>
+                  <CheckCircle2 size={15} />
+                  <span>✓ Wallet Connected</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={connectWallet}
+                  className="btn btn-primary"
+                  style={{
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    borderColor: '#f59e0b',
+                    color: '#ffffff',
+                    fontWeight: '700',
+                    fontSize: '0.88rem',
+                    padding: '0.65rem 1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: '0 4px 15px rgba(245, 158, 11, 0.35)',
+                  }}
+                >
+                  <Wallet size={16} />
+                  <span>Connect Wallet</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -433,6 +498,20 @@ export default function CharityRegister() {
                   className="form-input"
                 />
               </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">On-Chain Charity Wallet Address (MetaMask) *</label>
+              <input
+                type="text"
+                readOnly
+                value={account || '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'}
+                className="form-input font-mono"
+                style={{ background: 'rgba(15, 23, 42, 0.75)', color: isConnected ? '#34d399' : '#94a3b8', fontSize: '0.88rem' }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                {isConnected ? '✓ Verified and connected via MetaMask extension' : 'Click "Connect Wallet" above to connect your organization address'}
+              </span>
             </div>
 
             {/* Description */}

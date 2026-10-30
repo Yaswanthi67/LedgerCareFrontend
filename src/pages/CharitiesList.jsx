@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { formatDate, truncateHash } from '../utils/formatters';
 import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 
 export default function CharitiesList() {
+  const { isDonor } = useAuth();
   const [charities, setCharities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -82,16 +84,18 @@ export default function CharitiesList() {
           />
         </div>
 
-        <Link
-          to="/charity/register"
-          className="btn btn-primary"
-          style={{
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-          }}
-        >
-          <PlusCircle size={16} />
-          <span>Register New Charity</span>
-        </Link>
+        {!isDonor && (
+          <Link
+            to="/charity/register"
+            className="btn btn-primary"
+            style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            }}
+          >
+            <PlusCircle size={16} />
+            <span>Register New Charity</span>
+          </Link>
+        )}
       </div>
 
       {/* Grid */}

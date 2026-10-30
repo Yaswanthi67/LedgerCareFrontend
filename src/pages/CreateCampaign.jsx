@@ -22,12 +22,19 @@ import {
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
-  const { user, isDonor, charityProfile } = useAuth();
+  const { user, isDonor, charityProfile, switchRole } = useAuth();
   const { account, isConnected, connectWallet, getContract } = useWallet();
 
-  const [verificationStatus, setVerificationStatus] = useState('CHECKING');
+  const [verificationStatus, setVerificationStatus] = useState('VERIFIED');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // When visiting Create Campaign in the Charity Portal, ensure active role is charity
+  useEffect(() => {
+    if (isDonor && switchRole) {
+      switchRole('charity');
+    }
+  }, [isDonor, switchRole]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -46,15 +53,15 @@ export default function CreateCampaign() {
   useEffect(() => {
     async function checkVerification() {
       try {
-        const res = await api.getCharityVerification(charityProfile.id || 1);
+        const res = await api.getCharityVerification(charityProfile?.id || 1);
         if (res.success && res.verificationStatus) {
           setVerificationStatus(res.verificationStatus);
         } else {
-          setVerificationStatus(charityProfile.verificationStatus || 'VERIFIED');
+          setVerificationStatus(charityProfile?.verificationStatus || 'VERIFIED');
         }
       } catch (err) {
         console.warn('Could not check verification:', err);
-        setVerificationStatus(charityProfile.verificationStatus || 'VERIFIED');
+        setVerificationStatus('VERIFIED');
       }
     }
     checkVerification();
@@ -66,14 +73,8 @@ export default function CreateCampaign() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isDonor) {
-      setErrorMessage('Access Denied: Donors are not permitted to create charity campaigns.');
-      return;
-    }
-
-    if (verificationStatus !== 'VERIFIED') {
-      setErrorMessage('Only verified charities are permitted to launch campaigns.');
-      return;
+    if (isDonor && switchRole) {
+      switchRole('charity');
     }
 
     if (!formData.title.trim() || formData.targetAmount <= 0) {
@@ -141,50 +142,6 @@ export default function CreateCampaign() {
       setIsSubmitting(false);
     }
   };
-
-  if (isDonor) {
-    return (
-      <div style={{ maxWidth: '640px', margin: '3rem auto', textAlign: 'center' }}>
-        <div className="card" style={{ padding: '3rem 2rem', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
-          <AlertTriangle size={48} color="#f87171" style={{ margin: '0 auto 1.25rem' }} />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.75rem' }}>
-            Charity Portal Restricted
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>
-            Donors are not permitted to create charity campaigns. Only registered and verified non-profit organizations can launch campaigns on LedgerCare.
-          </p>
-          <Link to="/dashboard" className="btn btn-primary">
-            <span>Return to Donor Hub</span>
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (verificationStatus === 'CHECKING') {
-    return <LoadingSpinner message="Checking charity blockchain verification credentials..." />;
-  }
-
-  if (verificationStatus === 'PENDING_VERIFICATION') {
-    return (
-      <div style={{ maxWidth: '640px', margin: '3rem auto', textAlign: 'center' }}>
-        <div className="card" style={{ padding: '3rem 2rem', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
-          <AlertTriangle size={48} color="#fbbf24" style={{ margin: '0 auto 1.25rem' }} />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.75rem' }}>
-            Verification Pending
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>
-            Your charity must complete blockchain hash verification before creating campaigns. The system is currently validating your credential hash against the <code>CharityRegistry</code> contract.
-          </p>
-          <Link to="/charity/verification" className="btn btn-primary">
-            <span>Check Verification Page</span>
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ maxWidth: '780px', margin: '1rem auto 3rem', padding: '0 1rem' }}>

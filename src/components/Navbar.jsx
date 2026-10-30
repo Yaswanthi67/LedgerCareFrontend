@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-// import WalletButton from './WalletButton';
 import {
   Shield,
   Menu,
@@ -23,6 +22,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => {
     if (path === '/' && location.pathname === '/') return true;
@@ -105,6 +105,10 @@ export default function Navbar() {
             <Link
               key={link.path}
               to={link.path}
+              onClick={() => {
+                if (link.path === '/donor') switchRole('donor');
+                if (link.path === '/charity') switchRole('charity');
+              }}
               style={{
                 padding: '0.5rem 0.85rem',
                 fontSize: '0.88rem',
@@ -173,7 +177,7 @@ export default function Navbar() {
                 </div>
 
                 <button
-                  onClick={() => { switchRole('donor'); setRoleDropdownOpen(false); }}
+                  onClick={() => { switchRole('donor'); navigate('/donor'); setRoleDropdownOpen(false); }}
                   style={{
                     width: '100%',
                     display: 'flex',
@@ -194,7 +198,7 @@ export default function Navbar() {
                 </button>
 
                 <button
-                  onClick={() => { switchRole('charity'); setRoleDropdownOpen(false); }}
+                  onClick={() => { switchRole('charity'); navigate('/charity'); setRoleDropdownOpen(false); }}
                   style={{
                     width: '100%',
                     display: 'flex',
@@ -215,7 +219,7 @@ export default function Navbar() {
                 </button>
 
                 <button
-                  onClick={() => { switchRole('admin'); setRoleDropdownOpen(false); }}
+                  onClick={() => { switchRole('admin'); navigate('/admin'); setRoleDropdownOpen(false); }}
                   style={{
                     width: '100%',
                     display: 'flex',
@@ -235,20 +239,23 @@ export default function Navbar() {
                   <span>Admin Auditor</span>
                 </button>
 
-                <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '0.4rem 0' }} />
-
-                <Link
-                  to="/charity/register"
-                  onClick={() => setRoleDropdownOpen(false)}
-                  style={{
-                    display: 'block',
-                    padding: '0.45rem 0.65rem',
-                    fontSize: '0.78rem',
-                    color: '#94a3b8',
-                  }}
-                >
-                  + Register New Charity
-                </Link>
+                {!isDonor && (
+                  <>
+                    <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '0.4rem 0' }} />
+                    <Link
+                      to="/charity/register"
+                      onClick={() => setRoleDropdownOpen(false)}
+                      style={{
+                        display: 'block',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.78rem',
+                        color: '#94a3b8',
+                      }}
+                    >
+                      + Register New Charity
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>

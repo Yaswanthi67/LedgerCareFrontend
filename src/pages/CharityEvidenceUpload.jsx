@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useWallet } from '../context/WalletContext';
+import WalletButton from '../components/WalletButton';
 import { formatInr, truncateHash, formatDate } from '../utils/formatters';
 import StatusBadge from '../components/StatusBadge';
 import {
@@ -280,9 +281,14 @@ export default function CharityEvidenceUpload() {
         <h1 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.5rem' }}>
           Upload Expenditure Evidence
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '640px', margin: '0 auto' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '640px', margin: '0 auto 1.5rem' }}>
           Upload bills, invoices, and receipts. LedgerCare computes the cryptographic SHA-256 hash in the backend, pins the original file to IPFS, and submits an on-chain registration transaction to MetaMask for charity approval.
         </p>
+
+        {/* Charity Wallet Signer */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <WalletButton />
+        </div>
       </div>
 
       {/* Top Banner Alert (Matches SecureShare Video) */}

@@ -1,10 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatInr, ethToInr } from '../utils/formatters';
 import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
+import WalletButton from '../components/WalletButton';
 import {
   Building2,
   ShieldCheck,
@@ -18,10 +19,18 @@ import {
   ArrowRight,
   AlertTriangle,
   CheckCircle2,
+  Wallet,
 } from 'lucide-react';
 
 export default function CharityDashboard() {
-  const { charityProfile } = useAuth();
+  const { charityProfile, isCharity, switchRole } = useAuth();
+
+  useEffect(() => {
+    if (!isCharity && switchRole) {
+      switchRole('charity');
+    }
+  }, [isCharity, switchRole]);
+
   const [stats, setStats] = useState({
     totalCampaigns: 1,
     activeCampaigns: 1,
@@ -105,30 +114,78 @@ export default function CharityDashboard() {
           </p>
         </div>
 
-        {/* Create Campaign button strictly governed by verification state */}
-        {isVerified ? (
+        {/* Action Controls: Wallet Connection & Create Campaign */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <WalletButton />
+
           <Link
             to="/charity/campaigns/create"
             className="btn btn-primary"
             style={{
               background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
               boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
             }}
           >
             <PlusCircle size={16} />
             <span>Create Campaign</span>
           </Link>
-        ) : (
-          <button
-            disabled={true}
-            className="btn btn-secondary"
-            style={{ opacity: 0.5, cursor: 'not-allowed' }}
-            title="Complete blockchain verification to enable campaign creation"
-          >
-            <Lock size={16} />
-            <span>Create Campaign (Disabled)</span>
-          </button>
-        )}
+        </div>
+      </div>
+
+      {/* Charity MetaMask Wallet Status Card */}
+      <div className="card" style={{
+        padding: '1.25rem 1.5rem',
+        border: '1px solid rgba(59, 130, 246, 0.35)',
+        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '1rem',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            background: 'rgba(226, 118, 37, 0.15)',
+            border: '1px solid rgba(226, 118, 37, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <Wallet size={22} color="#fb923c" />
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+              <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#ffffff' }}>
+                Charity Organization Wallet
+              </span>
+              <span style={{
+                fontSize: '0.68rem',
+                padding: '0.15rem 0.5rem',
+                borderRadius: '9999px',
+                background: 'rgba(16, 185, 129, 0.15)',
+                color: '#34d399',
+                fontWeight: '700',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+              }}>
+                MetaMask On-Chain Signer
+              </span>
+            </div>
+            <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: 0 }}>
+              Connect your authorized organization wallet to approve campaigns, sign evidence records, and anchor expenditures on-chain.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <WalletButton />
+        </div>
       </div>
 
       {/* Verification Status Banner */}
