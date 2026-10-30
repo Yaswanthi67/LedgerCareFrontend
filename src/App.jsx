@@ -1,6 +1,7 @@
-﻿import React from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { WalletProvider } from './context/WalletContext';
 
 // Components
 import Navbar from './components/Navbar';
@@ -90,58 +91,62 @@ export default function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <BrowserRouter>
-          <div className="app-container">
-            <Navbar />
-            <main className="main-content">
-              <Routes>
-                {/* Public & Donor Experience */}
-                <Route path="/" element={<Home />} />
-                <Route path="/campaigns" element={<Campaigns />} />
-                <Route path="/campaigns/:id" element={<CampaignDetails />} />
-                <Route path="/campaign/:id" element={<CampaignDetails />} />
-                <Route path="/charities" element={<CharitiesList />} />
-                <Route path="/about" element={<About />} />
+        <WalletProvider>
+          <BrowserRouter>
+            <div className="app-container">
+              <Navbar />
+              <main className="main-content">
+                <Routes>
+                  {/* Public & Donor Experience */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/campaigns" element={<Campaigns />} />
+                  <Route path="/campaigns/:id" element={<CampaignDetails />} />
+                  <Route path="/campaign/:id" element={<CampaignDetails />} />
+                  <Route path="/charities" element={<CharitiesList />} />
+                  <Route path="/about" element={<About />} />
 
-                {/* ₹ Donations, Success & Receipts */}
-                <Route path="/donation/success" element={<DonationSuccess />} />
-                <Route path="/donations" element={<DonationHistory />} />
-                <Route path="/donations/:id" element={<DonationReceipt />} />
+                  {/* INR Donations, Success & Receipts */}
+                  <Route path="/donation/success" element={<DonationSuccess />} />
+                  <Route path="/donations" element={<DonationHistory />} />
+                  <Route path="/donations/:id" element={<DonationReceipt />} />
 
-                {/* Charity Lifecycle */}
-                <Route path="/charity/register" element={<CharityRegister />} />
-                <Route path="/charity/verification" element={<CharityVerification />} />
-                <Route path="/charity/campaigns" element={<CharityCampaigns />} />
-                <Route path="/charity/campaigns/create" element={<CreateCampaign />} />
-                <Route path="/charity/evidence" element={<CharityEvidenceUpload />} />
-                <Route path="/charity/funds" element={<FundUtilization />} />
-                <Route path="/charity/dashboard" element={<CharityDashboard />} />
-                <Route path="/charity" element={<CharityDashboard />} />
+                  {/* Charity Lifecycle */}
+                  <Route path="/charity/register" element={<CharityRegister />} />
+                  <Route path="/charity/verification" element={<CharityVerification />} />
+                  <Route path="/charity/campaigns" element={<CharityCampaigns />} />
+                  <Route path="/charity/campaigns/create" element={<CreateCampaign />} />
+                  <Route path="/charity/evidence" element={<CharityEvidenceUpload />} />
+                  <Route path="/charity/funds" element={<FundUtilization />} />
+                  <Route path="/charity/dashboard" element={<CharityDashboard />} />
+                  <Route path="/charity" element={<CharityDashboard />} />
 
-                {/* Cryptographic Verification & Transparency */}
-                <Route path="/evidence/:id" element={<EvidenceVerification />} />
-                <Route path="/verify" element={<EvidenceVerification />} />
-                <Route path="/transparency/blockchain" element={<BlockchainRecords />} />
-                <Route path="/transparency/:campaignId" element={<TransparencyTimeline />} />
+                  {/* Cryptographic Verification & Transparency */}
+                  <Route path="/blockchain" element={<BlockchainRecords />} />
+                  <Route path="/transparency" element={<EvidenceVerification />} />
+                  <Route path="/evidence/:id" element={<EvidenceVerification />} />
+                  <Route path="/verify" element={<EvidenceVerification />} />
+                  <Route path="/transparency/blockchain" element={<BlockchainRecords />} />
+                  <Route path="/transparency/:campaignId" element={<TransparencyTimeline />} />
 
-                {/* Admin Monitoring (No manual approval buttons) */}
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/charities" element={<AdminCharityMonitoring />} />
-                <Route path="/admin/evidence" element={<AdminEvidenceMonitoring />} />
+                  {/* Admin Monitoring */}
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/charities" element={<AdminCharityMonitoring />} />
+                  <Route path="/admin/evidence" element={<AdminEvidenceMonitoring />} />
 
-                {/* User Dashboards & Auth */}
-                <Route path="/dashboard" element={<DonorDashboard />} />
-                <Route path="/donor" element={<DonorDashboard />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Login />} />
+                  {/* User Dashboards & Auth */}
+                  <Route path="/dashboard" element={<DonorDashboard />} />
+                  <Route path="/donor" element={<DonorDashboard />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Login />} />
 
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </BrowserRouter>
+                  {/* 404 */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </BrowserRouter>
+        </WalletProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

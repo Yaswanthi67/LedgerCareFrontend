@@ -1,8 +1,9 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { formatInr } from '../utils/formatters';
+import { formatInr, truncateHash } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
+import { useWallet } from '../context/WalletContext';
 import {
   X,
   Heart,
@@ -13,6 +14,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Lock,
+  Wallet,
 } from 'lucide-react';
 
 const PRESET_AMOUNTS = [100, 500, 1000, 2000];
@@ -20,6 +22,7 @@ const PRESET_AMOUNTS = [100, 500, 1000, 2000];
 export default function DonationModal({ campaign, isOpen, onClose, onDonationSuccess }) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { account: donorWalletAddress, isConnected: isWalletConnected, connectWallet } = useWallet();
 
   const [amount, setAmount] = useState(500);
   const [isCustom, setIsCustom] = useState(false);
@@ -69,42 +72,38 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
       setStep('processing');
       setStatusMessage('Creating secure payment order with backend...');
 
-      // 1. Create payment order via Backend REST API
+      // 1. Create payment order via Backend REST API (attaching connected MetaMask wallet if present)
       const orderRes = await api.createPaymentOrder({
         campaignId,
         amount: selectedAmount,
         donorName: donorName.trim(),
         donorEmail: donorEmail.trim(),
         donorPhone: donorPhone.trim() || '9820098200',
+        donorWalletAddress: donorWalletAddress || null,
       });
 
       if (!orderRes.success || !orderRes.orderId) {
         throw new Error(orderRes.message || 'Failed to create payment order.');
       }
 
-      setStatusMessage('Verifying UPI payment authorization...');
+      setStatusMessage('Verifying INR/UPI payment authorization...');
 
       // In sandbox/demo environment, simulate the instant client-side payment completion
       const paymentId = 'pay_test_' + Date.now();
-      // Generate standard test HMAC signature or mock payload matching backend verifier
       const orderId = orderRes.orderId;
-      
-      // Calculate HMAC on backend or provide payload
+
       setStatusMessage('Confirming payment and recording donation on blockchain...');
       setStep('relaying');
 
       // 2. Call backend payment verification
-      // If client runs on demo secret, backend generates and signs blockchain transaction
       let verifyRes;
       try {
-        // Simple hash calculation for demo signature if needed
         verifyRes = await api.verifyPayment({
           razorpay_order_id: orderId,
           razorpay_payment_id: paymentId,
           razorpay_signature: 'demo_auto_verified_sig_' + orderId,
         });
       } catch (verErr) {
-        // If backend strict signature fails in test mode, fallback with standard test sig
         verifyRes = await api.verifyPayment({
           razorpay_order_id: orderId,
           razorpay_payment_id: paymentId,
@@ -118,7 +117,7 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
         if (onDonationSuccess) onDonationSuccess(verifyRes);
         onClose();
 
-        // Redirect to /donation/success with real state
+        // Redirect to /donation/success with real state including donorWalletAddress
         navigate('/donation/success', {
           state: {
             donation: {
@@ -127,6 +126,7 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
               amountInr: selectedAmount,
               donorName,
               donorEmail,
+              donorWalletAddress: donorWalletAddress || null,
               orderId,
               paymentId,
               transactionHash: verifyRes.transactionHash || '0xd6fbbbacec62efb5b1b659e876697aee98bef1e8cf7decd04aaae8d9d0d2be0c',
@@ -194,6 +194,51 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
         <div className="modal-body">
           {step === 'input' ? (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Donor MetaMask Wallet Indicator */}
+              <div style={{
+                padding: '0.6rem 0.85rem',
+                borderRadius: '8px',
+                background: isWalletConnected ? 'rgba(16, 185, 129, 0.08)' : 'rgba(59, 130, 246, 0.06)',
+                border: isWalletConnected ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(59, 130, 246, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '0.78rem',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <Wallet size={15} color={isWalletConnected ? '#34d399' : '#60a5fa'} />
+                  <span>
+                    {isWalletConnected ? (
+                      <>
+                        <strong style={{ color: '#34d399' }}>Connected Wallet:</strong>{' '}
+                        <span className="font-mono">{truncateHash(donorWalletAddress, 6, 4)}</span>
+                      </>
+                    ) : (
+                      <span style={{ color: '#93c5fd' }}>
+                        MetaMask optional: connect wallet to link your on-chain donor ID
+                      </span>
+                    )}
+                  </span>
+                </div>
+                {!isWalletConnected && (
+                  <button
+                    type="button"
+                    onClick={connectWallet}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#60a5fa',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Connect
+                  </button>
+                )}
+              </div>
+
               {/* Amount Picker */}
               <div>
                 <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
@@ -284,7 +329,7 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
               {/* Payment Method Selector */}
               <div>
                 <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
-                  Payment Method
+                  Payment Method (INR / UPI)
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
                   <button
@@ -432,7 +477,7 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
               }}>
                 <ShieldCheck size={16} color="#60a5fa" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <span>
-                  <strong>100% Transparent:</strong> Upon payment confirmation, the backend relayer automatically records this donation on the <code>DonationLedger</code> smart contract and assigns an immutable transaction hash.
+                  <strong>100% Transparent:</strong> Donations are INR/UPI-based. Upon payment confirmation, the backend relayer records this transaction onto the Ethereum <code>DonationLedger</code> smart contract.
                 </span>
               </div>
 
@@ -451,7 +496,7 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
               </button>
             </form>
           ) : (
-            /* Loading / Processing State */
+            /* Processing / Relaying Screen */
             <div style={{
               textAlign: 'center',
               padding: '2.5rem 1rem',
@@ -460,39 +505,44 @@ export default function DonationModal({ campaign, isOpen, onClose, onDonationSuc
               alignItems: 'center',
               gap: '1.25rem',
             }}>
-              <div
-                className="animate-spin"
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  border: '3px solid rgba(16, 185, 129, 0.2)',
-                  borderTopColor: '#10b981',
-                }}
-              />
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                border: '3px solid rgba(16, 185, 129, 0.2)',
+                borderTopColor: '#10b981',
+                animation: 'spin 1s linear infinite',
+              }} />
+
               <div>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Processing Donation
+                <h4 style={{ fontSize: '1.2rem', fontWeight: '700', color: '#ffffff', marginBottom: '0.35rem' }}>
+                  {step === 'processing' ? 'Processing INR Payment...' : 'Relaying to Blockchain...'}
                 </h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '380px' }}>
                   {statusMessage}
                 </p>
               </div>
 
               <div style={{
-                padding: '0.6rem 1rem',
-                borderRadius: 'var(--radius-full)',
-                background: 'rgba(15, 23, 42, 0.8)',
-                border: '1px solid var(--border-subtle)',
                 fontSize: '0.78rem',
                 color: 'var(--text-muted)',
+                background: 'rgba(15, 23, 42, 0.6)',
+                padding: '0.6rem 1rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border-subtle)',
               }}>
-                Amount: <strong style={{ color: '#34d399' }}>{formatInr(selectedAmount)}</strong> • Campaign #{campaignId}
+                Please do not refresh or close this window
               </div>
             </div>
           )}
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

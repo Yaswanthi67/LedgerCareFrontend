@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useWallet } from '../context/WalletContext';
 import { api } from '../services/api';
 import { formatInr } from '../utils/formatters';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -16,11 +17,13 @@ import {
   Image as ImageIcon,
   ArrowRight,
   CheckCircle2,
+  Wallet,
 } from 'lucide-react';
 
 export default function CreateCampaign() {
   const navigate = useNavigate();
-  const { charityProfile } = useAuth();
+  const { user, isDonor, charityProfile } = useAuth();
+  const { account, isConnected, connectWallet, getContract } = useWallet();
 
   const [verificationStatus, setVerificationStatus] = useState('CHECKING');
   const [errorMessage, setErrorMessage] = useState('');
@@ -63,6 +66,11 @@ export default function CreateCampaign() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isDonor) {
+      setErrorMessage('Access Denied: Donors are not permitted to create charity campaigns.');
+      return;
+    }
+
     if (verificationStatus !== 'VERIFIED') {
       setErrorMessage('Only verified charities are permitted to launch campaigns.');
       return;
@@ -75,15 +83,45 @@ export default function CreateCampaign() {
 
     setIsSubmitting(true);
     setErrorMessage('');
+    let metaMaskTxHash = null;
 
     try {
+      if (isConnected && window.ethereum) {
+        try {
+          const cmContract = await getContract('CampaignManager');
+          const startSec = Math.floor(new Date(formData.startDate).getTime() / 1000);
+          const endSec = Math.floor(new Date(formData.endDate).getTime() / 1000);
+          const ethVal = (Number(formData.targetAmount) / 250000).toFixed(6);
+          const targetWei = BigInt(Math.floor(parseFloat(ethVal) * 1e18));
+
+          const tx = await cmContract.createCampaign(
+            formData.title,
+            formData.description || 'Charity campaign',
+            targetWei,
+            startSec,
+            endSec
+          );
+          const receipt = await tx.wait();
+          metaMaskTxHash = receipt.hash;
+        } catch (metaMaskErr) {
+          if (metaMaskErr.code === 4001 || metaMaskErr.message?.includes('rejected') || metaMaskErr.message?.includes('denied') || metaMaskErr.message?.includes('User rejected')) {
+            throw new Error('MetaMask transaction was rejected by user. Campaign creation cancelled.');
+          }
+          console.warn('MetaMask campaign creation note (using relayer deployment):', metaMaskErr.message);
+        }
+      }
+
       // Dispatches to POST /api/campaigns
-      // Backend handles blockchain CampaignManager.sol createCampaign transaction
-      const res = await api.createCampaign({
+      const payload = {
         ...formData,
-        charityId: charityProfile.id,
-        charityName: charityProfile.organizationName,
-      });
+        targetAmountInr: formData.targetAmount,
+        charityId: charityProfile.id || 1,
+        charityName: charityProfile.organizationName || 'Verified Charity',
+        charityWallet: account || charityProfile.walletAddress || '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+        transactionHash: metaMaskTxHash,
+      };
+
+      const res = await api.createCampaign(payload);
 
       if (res.success) {
         navigate('/charity/campaigns');
@@ -98,11 +136,30 @@ export default function CreateCampaign() {
     }
   };
 
+  if (isDonor) {
+    return (
+      <div style={{ maxWidth: '640px', margin: '3rem auto', textAlign: 'center' }}>
+        <div className="card" style={{ padding: '3rem 2rem', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
+          <AlertTriangle size={48} color="#f87171" style={{ margin: '0 auto 1.25rem' }} />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.75rem' }}>
+            Charity Portal Restricted
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>
+            Donors are not permitted to create charity campaigns. Only registered and verified non-profit organizations can launch campaigns on LedgerCare.
+          </p>
+          <Link to="/dashboard" className="btn btn-primary">
+            <span>Return to Donor Hub</span>
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (verificationStatus === 'CHECKING') {
     return <LoadingSpinner message="Checking charity blockchain verification credentials..." />;
   }
 
-  // If NOT verified, show block screen
   if (verificationStatus === 'PENDING_VERIFICATION') {
     return (
       <div style={{ maxWidth: '640px', margin: '3rem auto', textAlign: 'center' }}>
@@ -123,27 +180,8 @@ export default function CreateCampaign() {
     );
   }
 
-  if (verificationStatus === 'VERIFICATION_FAILED') {
-    return (
-      <div style={{ maxWidth: '640px', margin: '3rem auto', textAlign: 'center' }}>
-        <div className="card" style={{ padding: '3rem 2rem', border: '1px solid rgba(244, 63, 94, 0.4)' }}>
-          <Lock size={48} color="#fb7185" style={{ margin: '0 auto 1.25rem' }} />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.75rem' }}>
-            Campaign Creation Blocked
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>
-            Charity verification has failed cryptographic hash checks. Only whitelisted, authenticated organizations can launch public campaigns on LedgerCare.
-          </p>
-          <Link to="/charity/register" className="btn btn-secondary">
-            <span>Re-Register Charity Credentials</span>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ maxWidth: '820px', margin: '1rem auto 3rem', padding: '0 1rem' }}>
+    <div style={{ maxWidth: '780px', margin: '1rem auto 3rem', padding: '0 1rem' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
         <div style={{
@@ -159,14 +197,53 @@ export default function CreateCampaign() {
           marginBottom: '0.85rem',
         }}>
           <ShieldCheck size={14} />
-          <span>Verified Charity: {charityProfile.organizationName} ✓</span>
+          <span>Verified Charity Portal</span>
         </div>
         <h1 style={{ fontSize: '2.4rem', fontWeight: '800', color: '#ffffff', marginBottom: '0.5rem' }}>
-          Create Fundraising Campaign
+          Launch a Transparent Campaign
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '600px', margin: '0 auto' }}>
-          Deploy an immutable, audited fundraising campaign. The backend relayer submits the campaign parameters directly to <code>CampaignManager.sol</code>.
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '580px', margin: '0 auto' }}>
+          Create an on-chain fundraising campaign linked to <code>CampaignManager.sol</code> and MongoDB. All raised funds and expenditures are tracked transparently.
         </p>
+      </div>
+
+      {/* Connected Wallet Bar */}
+      <div style={{
+        background: 'rgba(15, 23, 42, 0.6)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '10px',
+        padding: '0.75rem 1rem',
+        marginBottom: '1.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: '0.82rem',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Wallet size={16} color={isConnected ? '#34d399' : '#60a5fa'} />
+          <span>
+            {isConnected ? (
+              <>
+                <strong style={{ color: '#34d399' }}>Charity Creator Wallet:</strong>{' '}
+                <span className="font-mono">{account}</span>
+              </>
+            ) : (
+              <span style={{ color: '#94a3b8' }}>
+                MetaMask optional: connect wallet to sign as the campaign creator
+              </span>
+            )}
+          </span>
+        </div>
+        {!isConnected && (
+          <button
+            type="button"
+            onClick={connectWallet}
+            className="btn btn-secondary btn-sm"
+            style={{ fontSize: '0.75rem' }}
+          >
+            Connect Wallet
+          </button>
+        )}
       </div>
 
       <div className="card" style={{ padding: '2.5rem 2rem' }}>
@@ -178,14 +255,14 @@ export default function CreateCampaign() {
               type="text"
               required
               name="title"
-              placeholder="e.g. Rural Children Education & Digital Literacy Project"
+              placeholder="e.g. Free School Textbooks & Kits for 500 Students"
               value={formData.title}
               onChange={handleChange}
               className="form-input"
             />
           </div>
 
-          {/* Category & Target Amount in ₹ */}
+          {/* Category & Target Amount */}
           <div className="grid-2">
             <div className="form-group">
               <label className="form-label">Category *</label>
@@ -196,15 +273,16 @@ export default function CreateCampaign() {
                 className="form-select"
               >
                 <option value="Education">Education & Literacy</option>
-                <option value="Healthcare">Healthcare & Medicine</option>
-                <option value="Disaster Relief">Disaster Relief & Aid</option>
+                <option value="Healthcare">Healthcare & Medical Relief</option>
                 <option value="Hunger">Hunger & Food Distribution</option>
-                <option value="Women Empowerment">Women & Child Welfare</option>
+                <option value="Disaster Relief">Emergency & Disaster Relief</option>
+                <option value="Animal Welfare">Animal Welfare & Shelter</option>
+                <option value="Environment">Clean Energy & Environment</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Target Amount in Indian Rupees (₹) *</label>
+              <label className="form-label">Target Goal (₹ INR) *</label>
               <input
                 type="number"
                 required
@@ -215,9 +293,6 @@ export default function CreateCampaign() {
                 onChange={handleChange}
                 className="form-input"
               />
-              <span style={{ fontSize: '0.75rem', color: '#34d399', fontWeight: '600', marginTop: '0.2rem' }}>
-                Goal: {formatInr(formData.targetAmount)}
-              </span>
             </div>
           </div>
 
@@ -248,41 +323,14 @@ export default function CreateCampaign() {
             </div>
           </div>
 
-          {/* Location & Image URL */}
-          <div className="grid-2">
-            <div className="form-group">
-              <label className="form-label">Beneficiary Location</label>
-              <input
-                type="text"
-                name="location"
-                placeholder="e.g. Pune, Maharashtra"
-                value={formData.location}
-                onChange={handleChange}
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Campaign Banner Image URL</label>
-              <input
-                type="url"
-                name="imageUrl"
-                placeholder="https://images.unsplash.com/..."
-                value={formData.imageUrl}
-                onChange={handleChange}
-                className="form-input"
-              />
-            </div>
-          </div>
-
           {/* Description */}
           <div className="form-group">
-            <label className="form-label">Detailed Campaign Description *</label>
+            <label className="form-label">Campaign Narrative & Objectives *</label>
             <textarea
               required
-              rows={4}
               name="description"
-              placeholder="Explain why these funds are needed and how they will be deployed..."
+              rows={4}
+              placeholder="Detailed description of why funds are needed, how they will be deployed, and expected outcomes..."
               value={formData.description}
               onChange={handleChange}
               className="form-textarea"
@@ -292,43 +340,60 @@ export default function CreateCampaign() {
           {/* Beneficiary & Impact */}
           <div className="grid-2">
             <div className="form-group">
-              <label className="form-label">Beneficiary Information</label>
-              <textarea
-                rows={2}
+              <label className="form-label">Beneficiary Target Group *</label>
+              <input
+                type="text"
+                required
                 name="beneficiaryInfo"
+                placeholder="e.g. 500 children from low-income families"
                 value={formData.beneficiaryInfo}
                 onChange={handleChange}
-                className="form-textarea"
+                className="form-input"
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Expected Humanitarian Impact</label>
-              <textarea
-                rows={2}
-                name="expectedImpact"
-                value={formData.expectedImpact}
+              <label className="form-label">Location / Target Region *</label>
+              <input
+                type="text"
+                required
+                name="location"
+                placeholder="e.g. Mumbai Suburban, Maharashtra"
+                value={formData.location}
                 onChange={handleChange}
-                className="form-textarea"
+                className="form-input"
               />
             </div>
           </div>
 
-          {/* System Assurance Banner */}
+          {/* Image URL */}
+          <div className="form-group">
+            <label className="form-label">Campaign Header Image URL</label>
+            <input
+              type="url"
+              name="imageUrl"
+              placeholder="https://images.unsplash.com/photo-..."
+              value={formData.imageUrl}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
+
+          {/* Notice */}
           <div style={{
             padding: '0.85rem 1rem',
             borderRadius: 'var(--radius-md)',
-            background: 'rgba(16, 185, 129, 0.08)',
-            border: '1px solid rgba(16, 185, 129, 0.25)',
+            background: 'rgba(59, 130, 246, 0.08)',
+            border: '1px solid rgba(59, 130, 246, 0.25)',
             fontSize: '0.78rem',
-            color: '#6ee7b7',
+            color: '#93c5fd',
             display: 'flex',
-            alignItems: 'center',
             gap: '0.65rem',
+            alignItems: 'flex-start',
           }}>
-            <ShieldCheck size={18} color="#34d399" />
+            <ShieldCheck size={18} color="#60a5fa" style={{ flexShrink: 0, marginTop: '2px' }} />
             <span>
-              Your campaign will be deployed with strict financial caps and immutable start/end date constraints on Ethereum smart contracts.
+              <strong>Smart Contract Deployment:</strong> This campaign is initialized directly on <code>CampaignManager.sol</code> with target goal {formatInr(formData.targetAmount)}.
             </span>
           </div>
 
@@ -356,7 +421,7 @@ export default function CreateCampaign() {
             }}
           >
             <Sparkles size={18} />
-            <span>{isSubmitting ? 'Deploying Campaign to Blockchain...' : 'Deploy Verified Campaign'}</span>
+            <span>{isSubmitting ? 'Registering on Blockchain...' : 'Launch Campaign on Blockchain'}</span>
           </button>
         </form>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import WalletButton from './WalletButton';
 import {
   Shield,
   Menu,
@@ -30,11 +31,10 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Campaigns', path: '/campaigns' },
-    { name: 'Charities', path: '/charities' },
-    { name: 'Transparency', path: '/transparency/blockchain' },
-    { name: 'About', path: '/about' },
+    { name: '1. Donor', path: '/donor' },
+    { name: '2. Charity', path: '/charity' },
+    { name: '3. Blockchain & Smart Contract', path: '/transparency/blockchain' },
+    { name: '4. Transparency & Tracking', path: '/verify' },
   ];
 
   const roleConfig = {
@@ -99,108 +99,34 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Main Navigation Links */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }} className="desktop-nav">
+        {/* Main Navigation Links: The Four Core Modules */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }} className="desktop-nav">
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
               style={{
-                padding: '0.45rem 0.8rem',
+                padding: '0.5rem 0.85rem',
                 fontSize: '0.88rem',
-                fontWeight: '500',
+                fontWeight: '600',
                 borderRadius: 'var(--radius-sm)',
-                color: isActive(link.path) ? '#ffffff' : 'var(--text-secondary)',
-                background: isActive(link.path) ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                color: isActive(link.path) ? '#34d399' : 'var(--text-secondary)',
+                background: isActive(link.path) ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
+                border: isActive(link.path) ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid transparent',
                 transition: 'all 0.15s ease',
               }}
             >
               {link.name}
             </Link>
           ))}
-
-          {/* Conditional links based on active role */}
-          {isDonor && (
-            <>
-              <Link
-                to="/dashboard"
-                style={{
-                  padding: '0.45rem 0.8rem',
-                  fontSize: '0.88rem',
-                  fontWeight: '600',
-                  borderRadius: 'var(--radius-sm)',
-                  color: isActive('/dashboard') ? '#34d399' : '#6ee7b7',
-                  background: isActive('/dashboard') ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
-                }}
-              >
-                Donor Dashboard
-              </Link>
-              <Link
-                to="/donations"
-                style={{
-                  padding: '0.45rem 0.8rem',
-                  fontSize: '0.88rem',
-                  fontWeight: '500',
-                  borderRadius: 'var(--radius-sm)',
-                  color: isActive('/donations') ? '#ffffff' : 'var(--text-secondary)',
-                  background: isActive('/donations') ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                }}
-              >
-                My Donations
-              </Link>
-            </>
-          )}
-
-          {isCharity && (
-            <>
-              <Link
-                to="/charity/dashboard"
-                style={{
-                  padding: '0.45rem 0.8rem',
-                  fontSize: '0.88rem',
-                  fontWeight: '600',
-                  borderRadius: 'var(--radius-sm)',
-                  color: isActive('/charity') ? '#34d399' : '#6ee7b7',
-                  background: isActive('/charity') ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
-                }}
-              >
-                Charity Dashboard
-              </Link>
-              <Link
-                to="/charity/campaigns"
-                style={{
-                  padding: '0.45rem 0.8rem',
-                  fontSize: '0.88rem',
-                  fontWeight: '500',
-                  borderRadius: 'var(--radius-sm)',
-                  color: isActive('/charity/campaigns') ? '#ffffff' : 'var(--text-secondary)',
-                }}
-              >
-                Manage
-              </Link>
-            </>
-          )}
-
-          {isAdmin && (
-            <Link
-              to="/admin"
-              style={{
-                padding: '0.45rem 0.8rem',
-                fontSize: '0.88rem',
-                fontWeight: '600',
-                borderRadius: 'var(--radius-sm)',
-                color: isActive('/admin') ? '#c084fc' : '#e9d5ff',
-                background: isActive('/admin') ? 'rgba(168, 85, 247, 0.15)' : 'transparent',
-              }}
-            >
-              Admin Monitor
-            </Link>
-          )}
         </nav>
 
-        {/* Right Actions: Role Switcher & Donate Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* Role Switcher Pill */}
+        {/* Right Actions: MetaMask Wallet, Role Switcher & Donate Button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          {/* 1. MetaMask Wallet Connection Button */}
+          <WalletButton />
+
+          {/* 2. Role Switcher Pill */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
@@ -330,7 +256,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Quick Action Button */}
+          {/* 3. Quick Action Button */}
           <Link
             to="/campaigns"
             className="btn btn-primary btn-sm"
@@ -370,8 +296,12 @@ export default function Navbar() {
           borderTop: '1px solid var(--border-subtle)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.5rem',
+          gap: '0.65rem',
         }}>
+          <div style={{ padding: '0.5rem 0' }}>
+            <WalletButton />
+          </div>
+
           {navLinks.map((link) => (
             <Link
               key={link.path}

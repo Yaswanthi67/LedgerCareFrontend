@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useWallet } from '../context/WalletContext';
 import StatusBadge from '../components/StatusBadge';
 import {
   Building2,
@@ -12,11 +13,13 @@ import {
   ArrowRight,
   Lock,
   FileText,
+  Wallet,
 } from 'lucide-react';
 
 export default function CharityRegister() {
   const navigate = useNavigate();
-  const { setCharityProfile, switchRole } = useAuth();
+  const { isDonor, setCharityProfile, switchRole } = useAuth();
+  const { account, isConnected, connectWallet, getContract } = useWallet();
 
   const [formData, setFormData] = useState({
     organizationName: '',
@@ -49,6 +52,11 @@ export default function CharityRegister() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isDonor) {
+      setErrorMessage('Access Restricted: Donors are not permitted to register charities. Please switch to the Charity Portal.');
+      return;
+    }
+
     if (!formData.organizationName || !formData.registrationNumber || !formData.email) {
       setErrorMessage('Please complete all mandatory registration fields.');
       return;
@@ -56,14 +64,48 @@ export default function CharityRegister() {
 
     setIsSubmitting(true);
     setErrorMessage('');
+    let metaMaskTxHash = null;
 
     try {
+      if (isConnected && window.ethereum) {
+        try {
+          // 1. Whitelist credential via backend first
+          await api.registerCharity({
+            ...formData,
+            walletAddress: account,
+          });
+
+          // 2. Direct on-chain registration via MetaMask signer
+          const crContract = await getContract('CharityRegistry');
+          const tx = await crContract.registerCharity(
+            formData.organizationName,
+            formData.registrationNumber,
+            formData.email
+          );
+          const receipt = await tx.wait();
+          metaMaskTxHash = receipt.hash;
+        } catch (txErr) {
+          if (txErr.code === 4001 || txErr.message?.includes('rejected') || txErr.message?.includes('denied') || txErr.message?.includes('User rejected')) {
+            throw new Error('MetaMask transaction was rejected by user. Registration cancelled.');
+          }
+          console.warn('MetaMask registration note (using relayer deployment):', txErr.message);
+        }
+      }
+
       // Dispatches to POST /api/charities/register
-      // The backend validates, normalizes, generates hash, records to CharityRegistry contract
-      const res = await api.registerCharity(formData);
+      const payload = {
+        ...formData,
+        walletAddress: account || '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+        transactionHash: metaMaskTxHash,
+      };
+
+      const res = await api.registerCharity(payload);
 
       if (res.success) {
-        setResult(res);
+        setResult({
+          ...res,
+          transactionHash: metaMaskTxHash || res.charity?.transactionHash,
+        });
 
         // Update local auth context charity profile with registered ID
         setCharityProfile({
@@ -71,6 +113,7 @@ export default function CharityRegister() {
           organizationName: formData.organizationName,
           registrationNumber: formData.registrationNumber,
           email: formData.email,
+          walletAddress: payload.walletAddress,
           verified: res.verificationStatus === 'VERIFIED',
           verificationStatus: res.verificationStatus || 'VERIFIED',
           campaignEligibility: res.campaignEligibility || 'ALLOWED',
@@ -105,6 +148,7 @@ export default function CharityRegister() {
           fontSize: '0.8rem',
           fontWeight: '700',
           marginBottom: '0.85rem',
+          border: '1px solid rgba(59, 130, 246, 0.3)',
         }}>
           <ShieldCheck size={14} />
           <span>Cryptographic Organization Whitelisting</span>
@@ -113,7 +157,7 @@ export default function CharityRegister() {
           Charity Registration
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '600px', margin: '0 auto' }}>
-          Register your non-profit organization. The system normalizes your credentials, generates a cryptographic hash, and records it directly to <code>CharityRegistry.sol</code>.
+          Register your non-profit organization. The system normalizes your credentials, generates a cryptographic hash, and records it directly to <code>CharityRegistry.sol</code> and MongoDB.
         </p>
       </div>
 
@@ -154,12 +198,19 @@ export default function CharityRegister() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
               <span style={{ color: 'var(--text-muted)' }}>Organization</span>
-              <strong style={{ color: '#ffffff' }}>{result.organizationName}</strong>
+              <strong style={{ color: '#ffffff' }}>{result.charity?.organizationName || formData.organizationName}</strong>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
               <span style={{ color: 'var(--text-muted)' }}>Registration Number</span>
-              <span className="font-mono" style={{ color: '#ffffff' }}>{result.registrationNumber}</span>
+              <span className="font-mono" style={{ color: '#ffffff' }}>{result.charity?.registrationNumber || formData.registrationNumber}</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Wallet Address</span>
+              <span className="font-mono" style={{ color: '#93c5fd', fontSize: '0.82rem' }}>
+                {result.charity?.walletAddress || account}
+              </span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
@@ -170,11 +221,6 @@ export default function CharityRegister() {
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
               <span style={{ color: 'var(--text-muted)' }}>Verification Status</span>
               <StatusBadge type="charity" status={result.verificationStatus || 'VERIFIED'} size="sm" />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Campaign Eligibility</span>
-              <span style={{ color: '#34d399', fontWeight: '700' }}>Allowed ✓</span>
             </div>
 
             <div style={{ paddingTop: '0.75rem' }}>
@@ -206,6 +252,45 @@ export default function CharityRegister() {
       ) : (
         /* Registration Form */
         <div className="card" style={{ padding: '2.5rem 2rem' }}>
+          {/* Connected Wallet Bar */}
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.6)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '10px',
+            padding: '0.75rem 1rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.82rem',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Wallet size={16} color={isConnected ? '#34d399' : '#60a5fa'} />
+              <span>
+                {isConnected ? (
+                  <>
+                    <strong style={{ color: '#34d399' }}>Charity Wallet Connected:</strong>{' '}
+                    <span className="font-mono">{account}</span>
+                  </>
+                ) : (
+                  <span style={{ color: '#94a3b8' }}>
+                    Connect MetaMask to register with your organization wallet address
+                  </span>
+                )}
+              </span>
+            </div>
+            {!isConnected && (
+              <button
+                type="button"
+                onClick={connectWallet}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.75rem' }}
+              >
+                Connect Wallet
+              </button>
+            )}
+          </div>
+
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Row 1: Org Name & Reg Number */}
             <div className="grid-2">
@@ -364,51 +449,21 @@ export default function CharityRegister() {
               />
             </div>
 
-            {/* Document Upload */}
-            <div className="form-group">
-              <label className="form-label">Registration Certificate / 80G Documents *</label>
-              <div style={{
-                border: '2px dashed var(--border-subtle)',
-                borderRadius: 'var(--radius-md)',
-                padding: '1.5rem',
-                textAlign: 'center',
-                background: 'rgba(15, 23, 42, 0.4)',
-                cursor: 'pointer',
-              }}>
-                <input
-                  type="file"
-                  id="regDoc"
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  onChange={handleFileChange}
-                  style={{ display: 'none' }}
-                />
-                <label htmlFor="regDoc" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                  <Upload size={24} color="#60a5fa" />
-                  <span style={{ fontSize: '0.9rem', color: '#ffffff', fontWeight: '600' }}>
-                    {documentFile ? documentFile.name : 'Click to upload registration document (PDF, PNG, JPG)'}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Files will be verified against on-chain hash credentials
-                  </span>
-                </label>
-              </div>
-            </div>
-
             {/* Notice Banner */}
             <div style={{
               padding: '0.85rem 1rem',
               borderRadius: 'var(--radius-md)',
               background: 'rgba(59, 130, 246, 0.08)',
               border: '1px solid rgba(59, 130, 246, 0.25)',
-              fontSize: '0.8rem',
+              fontSize: '0.78rem',
               color: '#93c5fd',
               display: 'flex',
               gap: '0.65rem',
               alignItems: 'flex-start',
             }}>
-              <Lock size={16} color="#60a5fa" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <ShieldCheck size={18} color="#60a5fa" style={{ flexShrink: 0, marginTop: '2px' }} />
               <span>
-                <strong>System Notice:</strong> The Admin does <em>not</em> manually approve charities. Verification is determined strictly by the cryptographic hash of your credentials matching the smart contract records.
+                <strong>Instant Smart Contract Verification:</strong> Registration computes a deterministic Keccak-256 credential hash that is validated and permanently recorded on <code>CharityRegistry.sol</code> and MongoDB Atlas.
               </span>
             </div>
 
@@ -420,12 +475,8 @@ export default function CharityRegister() {
                 border: '1px solid rgba(244, 63, 94, 0.3)',
                 color: '#fb7185',
                 fontSize: '0.85rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
               }}>
-                <AlertCircle size={16} />
-                <span>{errorMessage}</span>
+                {errorMessage}
               </div>
             )}
 
@@ -436,11 +487,11 @@ export default function CharityRegister() {
               className="btn btn-primary btn-lg"
               style={{
                 marginTop: '0.5rem',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
               }}
             >
               <ShieldCheck size={18} />
-              <span>{isSubmitting ? 'Generating Hash & Recording on Chain...' : 'Submit & Generate Blockchain Hash'}</span>
+              <span>{isSubmitting ? 'Verifying & Registering on Blockchain...' : 'Register Organization on Blockchain'}</span>
             </button>
           </form>
         </div>
