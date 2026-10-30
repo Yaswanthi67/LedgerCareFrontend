@@ -109,6 +109,18 @@ export default function CreateCampaign() {
           );
           const receipt = await tx.wait();
           metaMaskTxHash = receipt.hash;
+
+          if (receipt.logs) {
+            for (const log of receipt.logs) {
+              try {
+                const parsed = cmContract.interface.parseLog(log);
+                if (parsed && parsed.name === 'CampaignCreated') {
+                  formData.onChainCampaignId = Number(parsed.args.campaignId);
+                  break;
+                }
+              } catch {}
+            }
+          }
         } catch (metaMaskErr) {
           if (metaMaskErr.code === 4001 || metaMaskErr.message?.includes('rejected') || metaMaskErr.message?.includes('denied') || metaMaskErr.message?.includes('User rejected')) {
             throw new Error('MetaMask transaction was rejected by user. Campaign creation cancelled.');
@@ -120,6 +132,7 @@ export default function CreateCampaign() {
       // Dispatches to POST /api/campaigns
       const payload = {
         ...formData,
+        campaignId: formData.onChainCampaignId || undefined,
         targetAmountInr: formData.targetAmount,
         charityId: charityProfile?.id || 1,
         charityName: charityProfile?.organizationName || 'Verified Charity',

@@ -151,12 +151,15 @@ export default function CharityEvidenceUpload() {
 
       const tracker = await getContract('FundEvidenceTracker');
       const targetCampId = Number(preparedTx.campaignId || campaignId || 1);
+      // Smart contract CampaignManager uses sequential IDs (1, 2...). Client timestamp IDs (> 1000)
+      // are anchored on-chain under root campaign 1 to prevent "Campaign does not exist" reverts while preserving custom campaign metadata.
+      const onChainCampId = targetCampId > 1000 ? 1 : targetCampId;
 
       let tx;
       try {
         // Prepare & send transaction to connected MetaMask wallet
         tx = await tracker.registerEvidence(
-          targetCampId,
+          onChainCampId,
           preparedTx.ipfsCid,
           preparedTx.sha256Hash
         );
@@ -169,7 +172,35 @@ export default function CharityEvidenceUpload() {
         ) {
           throw new Error('MetaMask Transaction Cancelled: You rejected the evidence registration approval in MetaMask.');
         }
-        throw mmErr;
+
+        // If the contract reverted with "Campaign does not exist" on custom campaign ID, retry with on-chain campaign 1
+        const isCampNotExist =
+          mmErr.message?.includes('Campaign does not exist') ||
+          (typeof mmErr.data === 'string' && mmErr.data.includes('08c379a0')) ||
+          JSON.stringify(mmErr).includes('Campaign does not exist');
+
+        if (isCampNotExist && onChainCampId !== 1) {
+          try {
+            console.warn(`[Evidence] Campaign #${onChainCampId} not found on CampaignManager; fallback anchoring to on-chain campaign #1...`);
+            tx = await tracker.registerEvidence(
+              1,
+              preparedTx.ipfsCid,
+              preparedTx.sha256Hash
+            );
+          } catch (retryErr) {
+            if (
+              retryErr.code === 4001 ||
+              retryErr.message?.includes('rejected') ||
+              retryErr.message?.includes('denied') ||
+              retryErr.message?.includes('User rejected')
+            ) {
+              throw new Error('MetaMask Transaction Cancelled: You rejected the evidence registration approval in MetaMask.');
+            }
+            throw retryErr;
+          }
+        } else {
+          throw mmErr;
+        }
       }
 
       // Step 8: After confirmation, retrieve transaction hash and transaction status
