@@ -582,24 +582,6 @@ export default function CharityRegister() {
               />
             </div>
 
-            {/* Notice Banner */}
-            <div style={{
-              padding: '0.85rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(59, 130, 246, 0.08)',
-              border: '1px solid rgba(59, 130, 246, 0.25)',
-              fontSize: '0.78rem',
-              color: '#93c5fd',
-              display: 'flex',
-              gap: '0.65rem',
-              alignItems: 'flex-start',
-            }}>
-              <ShieldCheck size={18} color="#60a5fa" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <span>
-                <strong>Instant Verification:</strong> Registration computes a deterministic Keccak-256 credential hash that is validated and permanently recorded on the blockchain and MongoDB Atlas.
-              </span>
-            </div>
-
             {errorMessage && (
               <div style={{
                 padding: '0.75rem 1rem',
